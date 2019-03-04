@@ -1,0 +1,12 @@
+#lang racket
+
+(require racket/gui)
+
+;定义主界面=======================
+(define main-frame
+  (new frame%
+       [label "QuickBIM"]
+       [width 800]
+       [height 600]
+       [border 5]))
+
