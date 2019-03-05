@@ -1,0 +1,26 @@
+#lang racket
+
+(require racket/gui)
+
+(provide main-frame)
+
+;定义主界面=======================
+(define main-frame
+  (new frame%
+       [label "QuickBIM"]
+       [width 800]
+       [height 600]
+       [border 5]))
+
+;定义视图框架分割区域：========================
+;定义菜单条:
+(define menubar
+  (new menu-bar%
+       [parent main-frame]))
+
+;总容器：
+(define panel/all
+  (new vertical-pane%
+       [parent main-frame]
+       [border 1]
+       [alignment (list 'left 'top)]))
