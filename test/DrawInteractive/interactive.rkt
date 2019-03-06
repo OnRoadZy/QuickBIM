@@ -3,7 +3,7 @@
 (require racket/gui)
 (require "draw.rkt")
 
-(provide main-frame)
+(include "interactive-canvas.rkt")
 
 ;定义主界面=======================
 (define main-frame
@@ -12,6 +12,8 @@
        [width 800]
        [height 600]
        [border 5]))
+
+(send main-frame show #t)
 
 ;定义视图框架分割区域：========================
 ;总容器：
@@ -28,7 +30,7 @@
 
 ;画布：
 (define canvas
-  (new canvas%
+  (new interactive-canvas%
        [parent panel/view]
        [style '(border)]
        [paint-callback

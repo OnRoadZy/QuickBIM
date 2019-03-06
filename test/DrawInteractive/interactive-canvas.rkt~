@@ -1,0 +1,13 @@
+#lang racket
+
+(require racket/gui)
+
+(define interactive-canvas%
+  (class canvas%
+    (define/override (on-event event)
+      (send msg set-label "画布点击鼠标事件。"))
+
+    (define/override (on-char event)
+      (send msg set-label "画布键盘事件。"))
+
+    (super-new)))
