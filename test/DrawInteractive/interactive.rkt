@@ -36,6 +36,9 @@
           [(equal? key 'escape)
            (add-str-to-commang-line "取消")
            (save-command)]
+          ;Backspace键：
+          [(equal? key #\backspace)
+           (backspace-command-line)]
           ;回车：
           [(or (equal? key #\return )
                (equal? key 'numpad-enter ))
@@ -59,7 +62,9 @@
       (when (equal?
              (get-interactive-value-style current-int)
              'point)
-        (get-mouse-point current-int (get-pos-from-event event))))))
+        (get-mouse-point
+         current-int
+         (get-pos-from-event event))))))
 
 ;接受鼠标点值：
 (define (get-mouse-point current-int point)
@@ -80,10 +85,21 @@
                (char=? key #\<)
                (char=? key #\,)
                (char=? key #\.)
-               (char=? key #\-)))
+               (char=? key #\-)
+               (char=? key #\@)))
       (format "~a" key)
       ""))
 
+;回退命令行文本：
+(define (backspace-command-line)
+  (let* ([str (send command-line get-label)]
+         [ls-str (regexp-split #rx"：" str)]
+         [len (string-length
+               (list-ref ls-str 1))])
+    (when (> len 0)
+           (send command-line set-label
+                 (substring str 0 (- (string-length str) 1))))))
+           
 ;添加字串到命令行文本：
 (define (add-str-to-commang-line str)
   (when (> (string-length str) 0)
@@ -92,12 +108,77 @@
            (send command-line get-label)
            str))))
 
+;从命令行取得回答文本：
+(define (get-answer-from-command-line)
+  (let ([str (send command-line get-label)])
+    (string-trim
+     (list-ref
+      (regexp-split #rx"：" str)
+      1))))
+
+;检查回答文本合法性：
+(define (answer-rightful? str)
+  (let ([value-style
+         (get-interactive-value-style (get-current-int))])
+    (cond
+      [(equal? value-style 'point)
+       (regexp-match #px"[0-9]*[<,][0-9]*" str)]
+      [(equal? value-style 'number)
+       (real? (string->number str))])))
+
+;是否为坐标格式，
+;坐标格式有两种：（number,number）,(number<degree)
+(define (value/point? str)
+  (when (or
+         (regexp-match #rx"," str)
+         (regexp-match #rx"<" str))
+    (let* ([ls-str (regexp-split #rx"[<,]" str)]
+           [first-str (list-ref ls-str 0)]
+           [second-str (list-ref ls-str 1)])
+      (and (string->number first-str)
+           (string->number second-str)))))
+;解析回答文本：
+(define (analyze-answer str)
+  (let ([value-style
+         (get-interactive-value-style (get-current-int))])
+    (cond
+      [(equal? value-style 'point) (get-answer/point str)]
+      [(equal? value-style 'number) (string->number str)]
+      [(equal? value-style 'string) str])))
+
+;解析点字串为点结构：
+(define (get-answer/point str)
+  ;点对形式：
+  (if (regexp-match #rx"," str)
+      (analyze-number-point str) ;数值点形式：
+      (analyze-angle-point str)));角度点形式：
+
+;解析数值点：
+(define (analyze-number-point str)
+  (let* ([ls-str (regexp-split #rx"," str)]
+         [v1 (string->number (string-ref str 0))]
+         [v2 (string->number (string-ref str 1))])
+    (point-struct v1 v2)))
+
+;解析角度点：
+(define (analyze-angle-point str)
+  (let* ([ls-str (regexp-split #rx"<" str)]
+         [v1 (string->number (string-ref str 0))]
+         [v2 (string->number (string-ref str 1))])
+    (values v1 v2)))
+
 ;添加交互记录：
 (define (save-command)
-  (send command-line-list set-value
-        (format "~a\n~a"
-                (send command-line-list get-value)
-                (send command-line get-label))))
+  (when (non-empty-string? (get-answer-from-command-line))
+    (send command-line-list set-value
+          (format "~a\n~a"
+                  (send command-line-list get-value)
+                  (send command-line get-label)))
+    (clear-command-line)))
+
+;清空命令行：
+(define (clear-command-line)
+  (send command-line set-label "命令："))
 
 ;刷新命令提示：
 (define (refresh-command current-int)
@@ -126,6 +207,7 @@
 (struct interactive-context-struct
   (style value-vector current-int end-prompt) #:mutable)
 ;定义会话值结构：
+;style：'point,'number,'string
 (struct interactive-value-struct
   (style prompt (value #:mutable)))
 
@@ -154,8 +236,10 @@
 
 ;取得绘图值的会话提示：
 (define (get-interactive-value-prompt current-int)
-  (interactive-value-struct-prompt
-   (get-interactive-context-value current-int)))
+  (string-append
+   (interactive-value-struct-prompt
+   (get-interactive-context-value current-int))
+   "："))
   
 ;设置绘图环境值并将当前会话序号增加1：
 (define (set-interactive-value current-int value)
@@ -178,26 +262,26 @@
    (vector
     (interactive-value-struct
      'point
-     "请输入直线的第一个点："
+     "请输入直线的第一个点"
      void)
     (interactive-value-struct
      'point
-     "请输入直线的第二个点："
+     "请输入直线的第二个点"
      void))
     0
     "画线……"))
 
 ;点数据结构：
-(struct point (x y))
+(struct point-struct (x y))
 
 ;线段数据结构：
-(struct line (p1 p2))
+(struct line-struct (p1 p2))
 
 (define (draw-line dc)
-  (let ([x1 (point-x (get-interactive-value 0))]
-        [y1 (point-y (get-interactive-value 0))]
-        [x2 (point-x (get-interactive-value 1))]
-        [y2 (point-y (get-interactive-value 1))])
+  (let ([x1 (point-struct-x (get-interactive-value 0))]
+        [y1 (point-struct-y (get-interactive-value 0))]
+        [x2 (point-struct-x (get-interactive-value 1))]
+        [y2 (point-struct-y (get-interactive-value 1))])
   (send dc draw-line
         x1 y1
         x2 y2)))
