@@ -1,0 +1,40 @@
+#lang racket
+
+
+;扩展控件类：======================
+;扩展画布类：
+(define interactive-canvas%
+  (class canvas%
+    ;重定义鼠标事件：
+    (define/override (on-event event) ;mouse-event%
+      (let ([type (send event get-event-type)])
+        (cond
+          ;点击左键：
+          [(equal? type 'left-down)
+           (click-left-button event)]
+          ;点击右键：
+          [(equal? type 'right-down)
+           (click-right-button event)]
+          ;把鼠标位置显示在状态栏：
+          [else (show-mouse-pos event)])))
+
+    ;重定义键盘事件：
+    (define/override (on-char event) ;key-event%
+      (let ([key (send event get-key-code)])
+        (cond
+          ;Esc键：
+          [(equal? key 'escape)
+           (add-str-to-commang-line "取消")
+           (save-command)]
+          ;Backspace键：
+          [(equal? key #\backspace)
+           (backspace-command-line)]
+          ;回车：
+          [(or (equal? key #\return )
+               (equal? key 'numpad-enter ))
+           (save-command)]
+          ;取可作为命令的编辑字符加入命令行：
+          [else (add-str-to-commang-line
+                 (get-char-from-event key))])))
+
+    (super-new)))

@@ -1,0 +1,79 @@
+#lang racket
+
+(require racket/gui)
+
+;定义主界面=======================
+(define main-frame
+  (new frame%
+       [label "QuickBIM"]
+       [width 800]
+       [height 600]
+       [border 5]))
+
+(send main-frame show #t)
+
+;定义视图框架分割区域：========================
+;总容器：
+(define pane/all
+  (new vertical-pane%
+       [parent main-frame]
+       [alignment (list 'left 'top)]))
+
+;视图区：
+(define pane/view
+  (new horizontal-pane%
+       [parent pane/all]
+       [alignment (list 'left 'bottom)]))
+
+;画布：
+(define canvas
+  (new interactive-canvas%
+       [parent pane/view]
+       [paint-callback
+        (lambda (canvas dc) (paint canvas dc))]))
+
+;视图-交互间隔：
+(define panel/separator
+  (new vertical-panel%
+       [parent pane/all]
+       [alignment (list 'left 'bottom)]
+       [min-height 3]
+       [stretchable-height #f]))
+
+;交互区：
+(define pane/interactive
+  (new vertical-pane%
+       [parent pane/all]
+       [border 1]
+       [alignment (list 'left 'bottom)]
+       [stretchable-height #f]))
+
+;已用命令列表显示框：
+(define command-line-list
+  (new text-field% 
+       [parent pane/interactive]
+       [label #f]
+       [style (list 'multiple)]
+       [init-value "准备就绪！"]
+       [min-height 80]
+       [stretchable-height #f]))
+
+;命令编辑框：
+(define command-line
+  (new message%
+       [parent pane/interactive]
+       [label "命令："]))
+
+;状态栏：
+(define pane/status
+  (new horizontal-pane%
+       [parent pane/all]
+       [alignment (list 'left 'bottom)]
+       [stretchable-height #f]))
+
+;信息
+(define status/mouse-position
+  (new message%
+       [parent pane/status]
+       [label "程序准备就绪！"]
+       [auto-resize #t]))
