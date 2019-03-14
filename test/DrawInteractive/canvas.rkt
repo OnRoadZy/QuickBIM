@@ -37,7 +37,7 @@
            void]
           ;为命令字符：
           [(interactive-char? key)
-           (handle-command-char key)])))
+           (add-char-to-interactive-line key)])))
 
     (super-new)))
 
@@ -77,6 +77,10 @@
            (char=? key #\-)
            (char=? key #\@))))
 
-;操作命令字符：
-(define (handle-command-char key)
-  void)
+;添加字符到交互行：
+(define (add-char-to-interactive-line key)
+  (send interactive-line set-label
+        (format "~a~a"
+         (send interactive-line get-label)
+         key)))
+

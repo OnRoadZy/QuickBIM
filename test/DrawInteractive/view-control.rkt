@@ -9,7 +9,7 @@
 (provide clear-intertactive-line)
 
 ;退出程序：
-(define (exit-app item)
+(define (exit-app item event)
   (send main-frame on-exit))
 
 ;关于：

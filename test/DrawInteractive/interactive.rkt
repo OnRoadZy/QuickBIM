@@ -1,7 +1,7 @@
 #lang racket
 
 (require "view.rkt"
-         "data.rkt")
+         "interactive-data.rkt")
 
 ;初始化会话环境：
 (define interactive-context void)

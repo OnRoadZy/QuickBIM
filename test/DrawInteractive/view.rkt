@@ -32,7 +32,7 @@
        [label "退出(&X)"]
        [callback
         (lambda (item event)
-          (exit-app item event main-frame))]))
+          (exit-app item event))]))
 
 ;绘图菜单：
 (define menu/draw

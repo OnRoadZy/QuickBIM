@@ -1,0 +1,11 @@
+#lang racket
+
+;绘图结构：
+(struct draw-struct
+  (style ;绘图类型。如：两点线2p-line
+   value-vector)) ;绘图值向量
+
+;绘图值结构：
+(struct draw-value-struct
+  (style ;值类型。包括：点'point，角度'angle，长度'length
+   value)) ;绘图值
