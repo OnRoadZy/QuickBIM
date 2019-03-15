@@ -1,25 +1,17 @@
 #lang racket
 
-(provide interactive-context
-         
-         interactive-struct
+(provide interactive-struct
          interactive-prompt-struct
          draw-struct
-         draw-value-struct
-         
-         reset-interactive-context
-         interactive-context-reset?)
+         draw-value-struct)
 
 ;数据结构============================================
-;会话环境全局变量:
-(define interactive-context void)
-
 ;会话结构：
 (struct interactive-struct
   (style ;会话类型。包括：两点线2p-line，多段线poly-line，半径圆‘circle-radius，圆弧arc
    current-int ;当前会话序号。对应会话向量序号
    prompt-vector ;会话提示向量
-   end-str)) ;会话结束语。如：“线段绘制结束。”
+   end-str)) ;回话结束语。如：“线段绘制结束。”
 
 ;会话提示结构：
 (struct interactive-prompt-struct
@@ -37,15 +29,7 @@
    value)) ;绘图值
 
 ;数据操作===============================================
-;重置会话环境:
-(define (reset-interactive-context)
-  (set! interactive-context void))
-
-;检查重置状态：
-(define (interactive-context-reset?)
-  (equal? interactive-context void))
-
-;是否为会话输入状态：
+;是否为命令输入状态：
 ;interactive-context-struct?->boolean?
 (define (command-char/command? context)
   context)

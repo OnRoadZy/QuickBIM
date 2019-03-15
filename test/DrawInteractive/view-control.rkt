@@ -6,8 +6,6 @@
 
 ;(require racket/gui)
 
-(provide clear-intertactive-line)
-
 ;退出程序：
 (define (exit-app item event)
   (send main-frame on-exit))
@@ -26,7 +24,3 @@
   (send dc set-text-foreground "white")
   (send dc set-scale 1 1)
   (send dc draw-text "画布（Canvas）准备就绪!" 0 0))
-
-;重置对话行：
-(define (clear-intertactive-line)
-  (send interactive-line set-label "命令："))

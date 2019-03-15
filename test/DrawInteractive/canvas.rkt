@@ -2,6 +2,8 @@
 
 ;(require racket/gui)
 
+(require "interactive-data.rkt")
+
 (provide interactive-canvas%)
 
 ;扩展控件类：======================
@@ -25,19 +27,20 @@
     (define/override (on-char event) ;key-event%
       (let ([key (send event get-key-code)])
         (cond
+          ;为命令字符:
+          [(interactive-char? key)
+           (add-str-to-interactive-line
+            (format "~a" key))]
           ;Esc键：
           [(equal? key 'escape)
-           void]
-          ;Backspace键：
+           (escape-interactive)]
+          ;Backspace键:
           [(equal? key #\backspace)
            (backspace-interactive-line)]
-          ;回车：
+          ;回车:
           [(or (equal? key #\return )
                (equal? key 'numpad-enter ))
-           void]
-          ;为命令字符：
-          [(interactive-char? key)
-           (add-char-to-interactive-line key)])))
+           (enter-interactive)])))
 
     (super-new)))
 
@@ -63,8 +66,48 @@
           (send event get-y)))
 
 ;处理键盘事件函数：==============================
-;检查键盘字符是否为会话字符（在会话行允许输入）：
-;包含：字符、数字、括号、@、逗号（,）、负号（-）,角号（<）
+;添加字符串到交互行：
+(define (add-str-to-interactive-line str)
+  (send interactive-line set-label
+        (string-append
+         (send interactive-line get-label)
+         str)))
+
+;回退交互行文本：
+(define (backspace-interactive-line)
+  (let* ([str (send interactive-line get-label)]
+         [ls-str (regexp-split #rx"：" str)]
+         [len (string-length
+               (list-ref ls-str 1))])
+    (when (> len 0)
+      (send interactive-line set-label
+            (substring str 0 (- (string-length str) 1))))))
+
+;放弃会话：
+(define (escape-interactive)
+  ;重置交互环境：
+  (reset-interactive-context)
+
+  ;添加提示放弃信息:
+  (when (non-empty-string? (get-answer-from-interactive-line))
+    (add-str-to-interactive-line "*取消*"))
+  ;保存交互行信息:
+  (save-interactive-line)
+  ;重置交互行:
+  (reset-interactive-line))
+
+;确认会话:
+(define (enter-interactive)
+  (let ([str (get-answer-from-interactive-line)])
+    (cond
+      ;为命令，且已重置交互环境，进入命令相应交互
+      [(and (command-str? str)
+            (interactive-context-reset?))
+       (interactive/draw str)])))
+
+;通用函数=======================================
+;检查键盘字符是否为会话字符(在会话行允许输入):
+;包含:字符、数字、括号、@、逗号(,)、负号(-),角号(<)
 (define (interactive-char? key)
   (and (char? key)
        (or (char-alphabetic? key)
@@ -77,14 +120,29 @@
            (char=? key #\-)
            (char=? key #\@))))
 
-;添加字符到交互行：
-(define (add-char-to-interactive-line key)
-  (send interactive-line set-label
-        (format "~a~a"
-         (send interactive-line get-label)
-         key)))
+;为命令字串？
+(define (command-str? str)
+  #t) 
 
+;保存交互行内容:
+(define (save-interactive-line)
+  (when (non-empty-string? (get-answer-from-interactive-line))
+    (send interactive-list set-value
+          (format "~a\n~a"
+                  (send interactive-list get-value)
+                  (send interactive-line get-label)))))
 
-;回退交互行最后一个字符：
-(define (backspace-interactive-line)
-  (
+;取得交互回答字符串：
+(define (get-answer-from-interactive-line)
+  (string-trim
+   (list-ref
+    (regexp-split #rx"：" (send interactive-line get-label))
+    1)))
+
+;重置交互行:
+(define (reset-interactive-line)
+  (send interactive-line set-label "命令："))
+
+;进行绘图交互：
+(define (interactive/draw str)
+  void)
