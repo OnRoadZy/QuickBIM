@@ -50,18 +50,14 @@
 ;数据操作========================================
 ;2点圆弧->角圆弧：
 (define (arc/2p->arc/angle value)
-  (let ([center
-         (arc/2p-struct-center value)]
-        [radius
-         (2p-length (arc/2p-struct-center
-                         arc/2p-struct-start))]
-        [start
-         (2p-angle (arc/2p-struct-center
-                        arc/2p-struct-start))]
-        [end
-         (2p-angle (arc/2p-struct-center
-                        arc/2p-struct-end))])
-    (arc/angle-struct center radius start end)))
+  (arc/angle-struct
+   (arc/2p-struct-center value)
+   (2p-length (arc/2p-struct-center value)
+              (arc/2p-struct-start value))
+   (2p-angle (arc/2p-struct-center value)
+             (arc/2p-struct-start value))
+   (2p-angle (arc/2p-struct-center value)
+             (arc/2p-struct-end value))))
 
 ;通用数学函数：=====================================
 ;计算两点距离：
@@ -69,10 +65,10 @@
   (sqrt (+
          (expt
           (- (point-struct-x p2)
-             (point-struct-x p1)) 2))
+             (point-struct-x p1)) 2)
         (expt
          (- (point-struct-y p2)
-            (point-struct-y p1)) 2)))
+            (point-struct-y p1)) 2))))
 
 ;计算两点角度：
 (define (2p-angle p1 p2)

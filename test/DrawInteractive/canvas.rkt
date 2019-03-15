@@ -30,7 +30,7 @@
            void]
           ;Backspace键：
           [(equal? key #\backspace)
-           void]
+           (backspace-interactive-line)]
           ;回车：
           [(or (equal? key #\return )
                (equal? key 'numpad-enter ))
@@ -84,3 +84,7 @@
          (send interactive-line get-label)
          key)))
 
+
+;回退交互行最后一个字符：
+(define (backspace-interactive-line)
+  (
