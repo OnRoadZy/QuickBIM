@@ -36,6 +36,69 @@
   (style ;值类型。包括：点'point，角度'angle，长度'length
    value)) ;绘图值
 
+;交互数据：=============================================
+;绘图命令与绘图交互环境类型对应表：
+(define command-style-hash
+  (hash "line" 'line/2p
+        "poly-line" 'line/poly
+        "radius-circle" 'circle/radius
+        "3p-arc" 'arc/3p))
+
+;两点线交互环境：
+(define line/2p-context
+  (interactive-struct
+   'line/2p
+   0
+   (vector (interactive-prompt-struct
+            ('point
+             "请输入线段的第一点"))
+           (interactive-prompt-struct
+            ('point
+             "请输入线段的第二点")))
+   "绘制两点线结束。"))
+
+;多段线交互环境：
+(define line/poly-context
+  (interactive-struct
+   'line/poly
+   0
+   (vector (interactive-prompt-struct
+            ('point
+             "请输入多段线的起点"))
+           (interactive-prompt-struct
+            ('select
+             "请选择多段线当前线的类型（L两点线/A圆弧）")))
+   "绘制多段线结束。"))
+
+;圆交互环境：
+(define circle/radius-context
+  (interactive-struct
+   'circle/radius
+   0
+   (vector (interactive-prompt-struct
+            ('point
+             "请输入圆心坐标"))
+           (interactive-prompt-struct
+            ('number
+             "请输入半径")))
+   "绘制圆结束。"))
+
+;三点圆弧交互环境：
+(define arc/3p-context
+  (interactive-struct
+   'arc/3p
+   0
+   (vector (interactive-prompt-struct
+            ('point
+             "请输入圆弧第一点"))
+           (interactive-prompt-struct
+            ('point
+             "请输入圆弧第二点"))
+           (interactive-prompt-struct
+            ('point
+             "请输入圆弧第三点")))
+   "绘制圆弧结束。"))
+
 ;数据操作===============================================
 ;重置会话环境:
 (define (reset-interactive-context)
