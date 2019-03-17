@@ -30,7 +30,7 @@
           ;为命令字符:
           [(interactive-char? key)
            (add-str-to-interactive-line
-            (format "~a" key))]
+            (string key))]
           ;Esc键：
           [(equal? key 'escape)
            (escape-interactive)]
@@ -122,11 +122,14 @@
 
 ;为命令字串？
 (define (command-str? str)
-  #t) 
+  (string=?
+   (car (regexp-match #px"[0-9a-z]*" str))
+   str))
 
 ;保存交互行内容:
 (define (save-interactive-line)
-  (when (non-empty-string? (get-answer-from-interactive-line))
+  (when (non-empty-string?
+         (get-answer-from-interactive-line))
     (send interactive-list set-value
           (format "~a\n~a"
                   (send interactive-list get-value)
@@ -145,4 +148,11 @@
 
 ;进行绘图交互：
 (define (interactive/draw str)
-  void)
+  ;设置交互环境：
+  (set-interactive-context str)
+  ;保存命令：
+  (save-interactive-line)
+  ;显示交互提示：
+  ;(show-interactive-prompt)
+  ;?????????????????????????????????????????????????????
+  )
