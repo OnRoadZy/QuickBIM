@@ -3,8 +3,7 @@
 (require racket/gui)
 
 (provide main-frame
-         canvas
-         interactive-line)
+         canvas)
 
 (include "canvas.rkt")
 

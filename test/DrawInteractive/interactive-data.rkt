@@ -4,7 +4,10 @@
 
          reset-interactive-context
          interactive-context-reset?
-         set-interactive-context)
+         set-interactive-context
+         get-interactive-prompt
+         get-interactive-prompt-vector
+         get-current-int)
 
 ;数据结构============================================
 ;会话环境全局变量:
@@ -124,4 +127,19 @@
           (hash-ref interactive-hash
                     (hash-ref draw-style-hash str)))))
 
+;取得绘图值的会话提示：
+(define (get-interactive-prompt current-int)
+  (string-append
+   (interactive-prompt-prompt
+    (get-interactive-prompt-vector current-int))
+   "："))
 
+;取得会话值：
+(define (get-interactive-prompt-vector current-int)
+  (vector-ref
+    (interactive-prompt-vector interactive-context)
+    current-int))
+
+;取得当前会话序号：
+(define (get-current-int)
+  (interactive-current-int interactive-context))
