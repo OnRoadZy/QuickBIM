@@ -1,0 +1,16 @@
+#lang racket
+
+(provide draws
+         get-draw
+         draws-append)
+
+;数据结构描述：===========================================
+;图形列表：
+(define draws '())
+
+;取得图形：
+(define (get-draw n)
+  void)
+
+;添加图形到图形列表：
+

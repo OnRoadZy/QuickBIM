@@ -2,7 +2,8 @@
 
 ;(require racket/gui)
 
-(require "interactive-data.rkt")
+(require "interactive-data.rkt"
+         "draws.rkt")
 
 (provide interactive-canvas%
          reset-interactive-line)
@@ -88,7 +89,6 @@
 (define (escape-interactive)
   ;重置交互环境：
   (reset-interactive-context)
-
   ;添加提示放弃信息:
   (when (non-empty-string? (get-answer-from-interactive-line))
     (add-str-to-interactive-line "*取消*"))
@@ -100,11 +100,20 @@
 ;确认会话:
 (define (enter-interactive)
   (let ([str (get-answer-from-interactive-line)])
-    (cond
-      ;为命令，且已重置交互环境，进入命令相应交互
-      [(and (command-str? str)
-            (interactive-context-reset?))
-       (interactive/draw str)])))
+    (if (interactive-context-reset?) ;已重置交互环境
+        ;为命令
+        (when (command-str? str)
+          (interactive/draw str)) ;进入命令相应交互
+      ;在交互状态下：
+      (let ([style ;取得会话提示需求值类型
+             (get-prompt-style
+              (get-current-int))])
+        ;为坐标：
+        (cond
+          [(equal? style 'point)
+           (begin
+             (save-point str)
+             (next-interactive))])))))
 
 ;通用函数=======================================
 ;检查键盘字符是否为会话字符(在会话行允许输入):
@@ -140,25 +149,52 @@
 (define (get-answer-from-interactive-line)
   (string-trim
    (list-ref
-    (regexp-split #rx"：" (send interactive-line get-label))
+    (string-split
+     (send interactive-line get-label)
+     "：")
     1)))
 
 ;重置交互行:
 (define (reset-interactive-line)
   (send interactive-line set-label "命令："))
 
+;进行下一段交互：
+(define (next-interactive)
+  (save-interactive-line)
+  (add-current-int)
+  (if
+   ;当前会话不是最后一个会话：
+   (< (get-current-int)
+      (- (get-prompt-number) 1))
+   (show-prompt)
+   (end-interactive)))
+
+;结束交互：
+(define (end-interactive)
+  ;保存图形数据：
+  (draws-append cur-draw)
+  ;显示结束语：
+  (show-end-str))
+
+;现实会话结束语：
+(define (show-end-str)
+  (send interactive-list set-label
+        (get-end-str)))
+
 ;进行绘图交互：
 (define (interactive/draw str)
   ;设置交互环境：
-  (set-interactive-context str)
-  ;保存命令：
-  (save-interactive-line)
-  ;显示交互提示：
-  (show-interactive-prompt))
+  (when (set-interactive-context str)
+    ;设置当前绘图类型：
+    (init-cur-draw)
+    ;保存命令：
+    (save-interactive-line)
+    ;显示交互提示：
+    (show-prompt)))
 
-;显示命令提示：
-(define (show-interactive-prompt)
+;显示交互提示：
+(define (show-prompt)
   (send interactive-line set-label
-        (get-interactive-prompt (get-current-int))))
+        (get-prompt (get-current-int))))
 
 ;

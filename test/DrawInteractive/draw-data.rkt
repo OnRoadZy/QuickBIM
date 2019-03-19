@@ -1,5 +1,8 @@
 #lang racket
 
+(provide point
+         draw-line/2p)
+
 ;数据结构描述：===========================================
 ;绘图结构：
 (struct draw
@@ -7,7 +10,7 @@
    value-vector)) ;绘图值向量
 
 ;绘图值结构：
-(struct draw/value
+(struct draw-value
   (style ;值类型。包括：点'point，角度'angle，长度'length
    value)) ;绘图值
 

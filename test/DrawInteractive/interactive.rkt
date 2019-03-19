@@ -11,4 +11,4 @@
 (send canvas focus)
 
 ;初始化会话行：
-(reset-intertactive-line)
+;(reset-intertactive-line)
