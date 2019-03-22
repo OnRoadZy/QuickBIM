@@ -1,18 +1,14 @@
 #lang racket
 
 (provide point
+         draw-pel
          draw-line/2p)
 
 ;数据结构描述：===========================================
 ;绘图结构：
 (struct draw
   (style ;绘图类型。如：两点线2p-line
-   value-vector)) ;绘图值向量
-
-;绘图值结构：
-(struct draw-value
-  (style ;值类型。包括：点'point，角度'angle，长度'length
-   value)) ;绘图值
+   value)) ;绘图值向量
 
 ;点结构：
 (struct point (x y))
@@ -51,6 +47,12 @@
    end)) ;结束点
 
 ;图元绘制：========================================
+;画一个图元：
+(define (draw-pel dc value)
+  (cond
+    [(equal? (draw-style value) '2p-line)
+     (draw-line/2p dc (draw-value value))]))
+
 ;画两点线：
 (define (draw-line/2p dc value)
   (let ([start (line/2p-start value)]

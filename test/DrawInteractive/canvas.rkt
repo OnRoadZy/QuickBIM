@@ -165,7 +165,7 @@
   (if
    ;当前会话不是最后一个会话：
    (< (get-current-int)
-      (- (get-prompt-number) 1))
+      (get-prompt-number))
    (show-prompt)
    (end-interactive)))
 
@@ -173,13 +173,18 @@
 (define (end-interactive)
   ;保存图形数据：
   (draws-append cur-draw)
+  ;(send canvas refresh-now)
+  (draw-pels (send canvas get-dc))
   ;显示结束语：
   (show-end-str))
 
-;现实会话结束语：
+;显示会话结束语：
 (define (show-end-str)
-  (send interactive-list set-label
-        (get-end-str)))
+  (send interactive-list set-value
+        (format "~a\n~a"
+                (send interactive-list get-value)
+                (get-end-str)))
+  (reset-interactive-line))
 
 ;进行绘图交互：
 (define (interactive/draw str)
@@ -196,5 +201,3 @@
 (define (show-prompt)
   (send interactive-line set-label
         (get-prompt (get-current-int))))
-
-;

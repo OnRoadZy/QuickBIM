@@ -23,8 +23,9 @@
 ;数据结构============================================
 ;会话环境全局变量:
 (define interactive-context void)
+
 ;定义绘图对象：
-(define cur-draw void)
+(define cur-draw (init-draws))
 
 ;会话结构：
 (struct interactive
