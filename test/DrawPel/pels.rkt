@@ -1,369 +1,152 @@
-#reader(lib"read.ss""wxme")WXME0108 ## 
-#|
-   This file uses the GRacket editor format.
-   Open this file in DrRacket version 6.12 or later to read it.
+#lang racket
 
-   Most likely, it was created by saving a program in DrRacket,
-   and it probably contains a program with non-text elements
-   (such as images or comment boxes).
+(require racket/draw)
 
-            http://racket-lang.org/
-|#
- 33 7 #"wxtext\0"
-3 1 6 #"wxtab\0"
-1 1 8 #"wximage\0"
-2 0 8 #"wxmedia\0"
-4 1 34 #"(lib \"syntax-browser.ss\" \"mrlib\")\0"
-1 0 36 #"(lib \"cache-image-snip.ss\" \"mrlib\")\0"
-1 0 68
-(
- #"((lib \"image-core.ss\" \"mrlib\") (lib \"image-core-wxme.rkt\" \"mr"
- #"lib\"))\0"
-) 1 0 16 #"drscheme:number\0"
-3 0 44 #"(lib \"number-snip.ss\" \"drscheme\" \"private\")\0"
-1 0 36 #"(lib \"comment-snip.ss\" \"framework\")\0"
-1 0 93
-(
- #"((lib \"collapsed-snipclass.ss\" \"framework\") (lib \"collapsed-sni"
- #"pclass-wxme.ss\" \"framework\"))\0"
-) 0 0 43 #"(lib \"collapsed-snipclass.ss\" \"framework\")\0"
-0 0 19 #"drscheme:sexp-snip\0"
-0 0 29 #"drscheme:bindings-snipclass%\0"
-1 0 101
-(
- #"((lib \"ellipsis-snip.rkt\" \"drracket\" \"private\") (lib \"ellipsi"
- #"s-snip-wxme.rkt\" \"drracket\" \"private\"))\0"
-) 2 0 88
-(
- #"((lib \"pict-snip.rkt\" \"drracket\" \"private\") (lib \"pict-snip.r"
- #"kt\" \"drracket\" \"private\"))\0"
-) 0 0 55
-#"((lib \"snip.rkt\" \"pict\") (lib \"snip-wxme.rkt\" \"pict\"))\0"
-1 0 34 #"(lib \"bullet-snip.rkt\" \"browser\")\0"
-0 0 25 #"(lib \"matrix.ss\" \"htdp\")\0"
-1 0 22 #"drscheme:lambda-snip%\0"
-1 0 29 #"drclickable-string-snipclass\0"
-0 0 26 #"drracket:spacer-snipclass\0"
-0 0 57
-#"(lib \"hrule-snip.rkt\" \"macro-debugger\" \"syntax-browser\")\0"
-1 0 26 #"drscheme:pict-value-snip%\0"
-0 0 45 #"(lib \"image-snipr.ss\" \"slideshow\" \"private\")\0"
-1 0 38 #"(lib \"pict-snipclass.ss\" \"slideshow\")\0"
-2 0 55 #"(lib \"vertical-separator-snip.ss\" \"stepper\" \"private\")\0"
-1 0 18 #"drscheme:xml-snip\0"
-1 0 31 #"(lib \"xml-snipclass.ss\" \"xml\")\0"
-1 0 21 #"drscheme:scheme-snip\0"
-2 0 34 #"(lib \"scheme-snipclass.ss\" \"xml\")\0"
-1 0 10 #"text-box%\0"
-1 0 32 #"(lib \"text-snipclass.ss\" \"xml\")\0"
-1 0 1 6 #"wxloc\0"
-          0 0 58 0 1 #"\0"
-0 75 1 #"\0"
-0 12 90 -1 90 -1 3 -1 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 255 255 255 1 -1 0 9
-#"Standard\0"
-0 75 10 #"Monospace\0"
-0 12 90 -1 90 -1 3 -1 0 1 0 1 0 0 0 0 0 0 0 0 0 0 0 255 255 255 1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 -1 -1 2 24
-#"framework:default-color\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 150 0 150 0 0 0 -1 -1 2 15
-#"text:ports out\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 150 0 150 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1.0 0 -1 -1 93 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 255 0 0 0 0 0 -1
--1 2 15 #"text:ports err\0"
-0 -1 1 #"\0"
-1 0 -1 -1 93 -1 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 175 0 0 0 -1 -1 2 17
-#"text:ports value\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 175 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1.0 0 92 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 34 139 34 0 0 0 -1
--1 2 27 #"Matching Parenthesis Style\0"
-0 -1 1 #"\0"
-1.0 0 92 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 34 139 34 0 0 0 -1
--1 2 1 #"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 37
-#"framework:syntax-color:scheme:symbol\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 38
-#"framework:syntax-color:scheme:keyword\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 38 38 128 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 194 116 31 0 0 0 -1 -1 2
-38 #"framework:syntax-color:scheme:comment\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 194 116 31 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 37
-#"framework:syntax-color:scheme:string\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 35
-#"framework:syntax-color:scheme:text\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 39
-#"framework:syntax-color:scheme:constant\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 41 128 38 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 132 60 36 0 0 0 -1 -1 2 49
-#"framework:syntax-color:scheme:hash-colon-keyword\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 132 60 36 0 0 0 -1 -1 2 42
-#"framework:syntax-color:scheme:parenthesis\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 132 60 36 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 36
-#"framework:syntax-color:scheme:error\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 36
-#"framework:syntax-color:scheme:other\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 16
-#"Misspelled Text\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 81 112 203 0 0 0 -1 -1 2
-38 #"drracket:check-syntax:lexically-bound\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 81 112 203 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 28
-#"drracket:check-syntax:set!d\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 37
-#"drracket:check-syntax:unused-require\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 36
-#"drracket:check-syntax:free-variable\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 255 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 68 0 203 0 0 0 -1 -1 2 31
-#"drracket:check-syntax:imported\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 68 0 203 0 0 0 -1 -1 2 47
-#"drracket:check-syntax:my-obligation-style-pref\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 178 34 34 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 116 0 0 0 0 -1 -1 2 50
-#"drracket:check-syntax:their-obligation-style-pref\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 116 0 0 0 0 -1 -1 2 48
-#"drracket:check-syntax:unk-obligation-style-pref\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 139 142 28 0 0 0 -1 -1 2
-49 #"drracket:check-syntax:both-obligation-style-pref\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 139 142 28 0 0 0 -1 -1 2
-26 #"plt:htdp:test-coverage-on\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 1
-#"\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 1 0 0 0 0 0 0 255 165 0 0 0 0 -1 -1 2 27
-#"plt:htdp:test-coverage-off\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 1 0 0 0 0 0 0 255 165 0 0 0 0 -1 -1 4 1
-#"\0"
-0 70 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
--1 -1 4 4 #"XML\0"
-0 70 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
--1 -1 2 37 #"plt:module-language:test-coverage-on\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 0 0 0 0 1 1 1 0 0 0 0 0 0 -1 -1 2 38
-#"plt:module-language:test-coverage-off\0"
-0 -1 1 #"\0"
-1 0 -1 -1 -1 93 -1 -1 0 1 0 0 0 1 0 0 0 0 0 0 255 165 0 0 0 0 -1 -1 4 1
-#"\0"
-0 71 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 1.0 1.0 1.0 1.0 1.0 1.0 0 0 0 0 0 0
--1 -1 4 1 #"\0"
-0 -1 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 1 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 0 255 0 0 0 -1
--1 4 1 #"\0"
-0 71 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 1 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 0 255 0 0 0 -1
--1 4 1 #"\0"
-0 71 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 100 0 0 0 0 -1
--1 4 1 #"\0"
-0 71 1 #"\0"
-1.0 0 -1 -1 93 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 255 0 0 0 0 0 -1
--1 2 1 #"\0"
-0 70 1 #"\0"
-1.0 0 -1 -1 93 -1 -1 -1 0 0 0 0 0 0 0 0 0 1.0 1.0 1.0 148 0 211 0 0 0 -1
--1 2 1 #"\0"
-0 70 1 #"\0"
-1.0 0 -1 -1 -1 -1 -1 -1 1 0 0 0 0 0 0 0 0 1.0 1.0 1.0 0 0 255 0 0 0 -1
--1           0 137 0 28 3 12 #"#lang racket"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"define"
-0 0 24 3 1 #" "
-0 0 14 3 5 #"draws"
-0 0 24 3 1 #" "
-0 0 14 3 4 #"null"
-0 0 24 3 1 #")"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 5 #"point"
-0 0 24 3 2 #" ("
-0 0 14 3 1 #"x"
-0 0 24 3 1 #" "
-0 0 14 3 1 #"y"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\344\270\244\347\202\271\347\272\277\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 7 #"line/2p"
-0 0 24 3 2 #" ("
-0 0 14 3 5 #"start"
-0 0 24 3 1 #" "
-0 0 14 3 3 #"end"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\345\244\232\346\256\265\347\272\277\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\346\255\243\346\226\271\345\275\242\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 12 #"rectangle/eq"
-0 0 24 3 2 #" ("
-0 0 14 3 8 #"top-left"
-0 0 24 3 1 #" "
-0 0 14 3 6 #"length"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\351\225\277\346\226\271\345\275\242\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 12 #"rectangle/2p"
-0 0 24 3 2 #" ("
-0 0 14 3 5 #"start"
-0 0 24 3 1 #" "
-0 0 14 3 3 #"end"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 13 #"rectangle/len"
-0 0 24 3 2 #" ("
-0 0 14 3 4 #"base"
-0 0 24 3 1 #" "
-0 0 14 3 6 #"length"
-0 0 24 3 1 #" "
-0 0 14 3 5 #"width"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 16
-#";\346\255\243\345\244\232\350\276\271\345\275\242\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\345\244\232\350\276\271\345\275\242\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 10 #";\347\202\271\345\234\206\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 9 #"circle/cp"
-0 0 24 3 2 #" ("
-0 0 14 3 6 #"center"
-0 0 24 3 1 #" "
-0 0 14 3 2 #"cp"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\344\270\244\347\202\271\345\234\206\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 9 #"circle/2p"
-0 0 24 3 2 #" ("
-0 0 14 3 5 #"start"
-0 0 24 3 1 #" "
-0 0 14 3 3 #"end"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\345\215\212\345\276\204\345\234\206\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 13 #"circle/radius"
-0 0 24 3 2 #" ("
-0 0 14 3 6 #"center"
-0 0 24 3 1 #" "
-0 0 14 3 6 #"radius"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 17 3 13 #";\344\270\211\347\202\271\345\234\206\357\274\232"
-0 0 24 29 1 #"\n"
-0 0 24 3 1 #"("
-0 0 15 3 6 #"struct"
-0 0 24 3 1 #" "
-0 0 14 3 9 #"circle/3p"
-0 0 24 3 2 #" ("
-0 0 14 3 5 #"start"
-0 0 24 3 1 #" "
-0 0 14 3 6 #"middle"
-0 0 24 3 1 #" "
-0 0 14 3 3 #"end"
-0 0 24 3 2 #"))"
-0 0 24 29 1 #"\n"
-0 0 24 29 1 #"\n"
-0 0 17 3 1 #";"
-0           0
+(provide draw-pels)
+
+(define draws null)
+
+;定义点结构：
+(struct point (x y))
+
+;定义图原结构：==============================
+;两点线：
+(struct line/2p (sp ep))
+
+;多段线：
+
+;正方形：
+(struct square (bp l))
+
+;长方形：
+(struct rectangle/2p (sp ep))
+(struct rectangle/len (bp l w))
+
+;正多边形：
+
+;多边形：
+
+;点圆：
+(struct circle/cp (cp ep))
+;两点圆：
+(struct circle/2p (sp ep))
+;半径圆：
+(struct circle/radius (cp r))
+;三点圆：
+(struct circle/3p (sp mp ep))
+
+;角圆弧：
+(struct arc/qngle (cp sa ea))
+;两点圆弧：
+(struct arc/2p (cp sp ep))
+;三点圆弧：
+(struct arc/3p (sp mp ep))
+
+;椭圆：
+(struct ellipse (cp hl vl))
+;椭圆弧：
+;(struct elliptic-arc (cp hl vl sa ea))
+
+;spline线：
+
+;B样条线：
+
+;nurbs线：
+
+;定义图元：========================================
+;两点线：
+(define cur-line/2p
+  (line/2p
+   (point 10 40)
+   (point 100 100)))
+
+;正方形：
+(define cur-square
+  (square
+   (point 100 30)
+   50))
+;矩形：
+(define cur-rectangle/2p
+  (rectangle/2p
+   (point 170 30)
+   (point 240 50)))
+
+;绘制图元：========================================
+(define (draw-pels dc)
+  (draw-line/2p dc cur-line/2p)
+  (draw-square dc cur-square)
+  (draw-rectangle/2p dc cur-rectangle/2p))
+
+;画两点线（draw-line）：
+(define (draw-line/2p dc l2p)
+  (let-values
+      ([(x1 y1 x2 y2)
+        (line/2p->draw/line l2p)])
+    (send dc draw-line x1 y1 x2 y2)))
+
+;draw-arc
+;draw-bitmap
+;draw-bitmap-section
+;draw-ellipse
+;draw-lines
+;draw-path
+;draw-point
+;draw-polygon
+;绘制正方形（draw-rectangle）：
+(define (draw-square dc sq)
+  (let-values
+      ([(x y width height)
+        (square->draw/rectangle sq)])
+    (send dc draw-rectangle
+          x y width height)))
+
+;绘制两点矩形（draw-rectangle）：
+(define (draw-rectangle/2p dc r2p)
+  (let-values
+      ([(x y width height)
+        (rectangle/2p->draw/rectangle r2p)])
+    (send dc draw-rectangle
+          x y width height)))
+                           
+;draw-rounded-rectangle
+;draw-spline
+;draw-text
+
+;通用函数：========================================
+;两点线结构转化为画线结构：
+(define (line/2p->draw/line l2p)
+  (values
+   (point-x (line/2p-sp l2p))
+   (point-y (line/2p-sp l2p))
+   (point-x (line/2p-ep l2p))
+   (point-y (line/2p-ep l2p))))
+
+;正方形结构转化为画矩形结构：
+(define (square->draw/rectangle sq)
+  (values
+   (point-x (square-bp sq))
+   (point-y (square-bp sq))
+   (square-l sq)
+   (square-l sq)))
+
+;矩形结构转化为画矩形结构：
+(define (rectangle/2p->draw/rectangle r2p)
+  (let ([xs (point-x (rectangle/2p-sp r2p))]
+        [ys (point-y (rectangle/2p-sp r2p))]
+        [xe (point-x (rectangle/2p-ep r2p))]
+        [ye (point-y (rectangle/2p-ep r2p))])
+    (if (< xs xe)
+        (if (< ys ye)
+            (values xs ys
+                    (- xe xs)
+                    (- ye ys))
+            (values xs ye
+                    (- xe xs)
+                    (- ys ye)))
+        (if (< ys ye)
+            (values xe ys
+                    (- xs xe)
+                    (- ye ys))
+            (values xe ye
+                    (- xs xe)
+                    (- ys ye))))))
