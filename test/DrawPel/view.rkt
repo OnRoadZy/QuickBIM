@@ -4,7 +4,7 @@
 
 (provide main-frame)
 
-(require "pels.rkt")
+(require "draw-pels.rkt")
 
 ;定义主界面=======================
 (define main-frame
@@ -139,7 +139,7 @@
   (send dc set-pen
         (make-object color%
           255 0 255)
-        2
+        1
         'solid)
   ;设置画刷：
   (send dc set-brush

@@ -2,9 +2,27 @@
 
 (require racket/draw)
 
-(provide draw-pels)
-
-(define draws null)
+(provide
+ ;图元结构：
+ (struct-out point)
+ (struct-out line/2p)
+ (struct-out square)
+ (struct-out rectangle/2p)
+ (struct-out rectangle/len)
+ (struct-out circle/cp)
+ (struct-out circle/2p)
+ (struct-out circle/radius)
+ (struct-out circle/3p)
+ (struct-out arc/angle)
+ (struct-out arc/2p)
+ (struct-out arc/3p)
+ (struct-out ellipse)
+ ;图元绘制：
+ draw-line/2p
+ draw-square
+ draw-rectangle/2p
+ draw-rectangle/len)
+  
 
 ;定义点结构：
 (struct point (x y))
@@ -36,7 +54,7 @@
 (struct circle/3p (sp mp ep))
 
 ;角圆弧：
-(struct arc/qngle (cp sa ea))
+(struct arc/angle (cp r sa ea))
 ;两点圆弧：
 (struct arc/2p (cp sp ep))
 ;三点圆弧：
@@ -53,30 +71,7 @@
 
 ;nurbs线：
 
-;定义图元：========================================
-;两点线：
-(define cur-line/2p
-  (line/2p
-   (point 10 40)
-   (point 100 100)))
-
-;正方形：
-(define cur-square
-  (square
-   (point 100 30)
-   50))
-;矩形：
-(define cur-rectangle/2p
-  (rectangle/2p
-   (point 170 30)
-   (point 240 50)))
-
-;绘制图元：========================================
-(define (draw-pels dc)
-  (draw-line/2p dc cur-line/2p)
-  (draw-square dc cur-square)
-  (draw-rectangle/2p dc cur-rectangle/2p))
-
+;绘制单个图元：========================================
 ;画两点线（draw-line）：
 (define (draw-line/2p dc l2p)
   (let-values
@@ -107,6 +102,14 @@
         (rectangle/2p->draw/rectangle r2p)])
     (send dc draw-rectangle
           x y width height)))
+
+;绘制两点矩形（draw-rectangle）：
+(define (draw-rectangle/len dc rlen)
+  (let-values
+      ([(x y width height)
+        (rectangle/len->draw/rectangle rlen)])
+    (send dc draw-rectangle
+          x y width height)))
                            
 ;draw-rounded-rectangle
 ;draw-spline
@@ -135,18 +138,17 @@
         [ys (point-y (rectangle/2p-sp r2p))]
         [xe (point-x (rectangle/2p-ep r2p))]
         [ye (point-y (rectangle/2p-ep r2p))])
-    (if (< xs xe)
-        (if (< ys ye)
-            (values xs ys
-                    (- xe xs)
-                    (- ye ys))
-            (values xs ye
-                    (- xe xs)
-                    (- ys ye)))
-        (if (< ys ye)
-            (values xe ys
-                    (- xs xe)
-                    (- ye ys))
-            (values xe ye
-                    (- xs xe)
-                    (- ys ye))))))
+    (values xs ys
+            (- xe xs)
+            (- ye ys))))
+
+(define (rectangle/len->draw/rectangle rlen)
+  (values
+   (point-x (rectangle/len-bp rlen))
+   (point-y (rectangle/len-bp rlen))
+   (rectangle/len-w rlen)
+   (rectangle/len-l rlen)))
+
+;圆结构转化为画圆结构：
+(define (circle/cp->draw/circle ccp)
+  void)
