@@ -11,7 +11,7 @@
  (struct-out rectangle/len)
  (struct-out circle/cp)
  (struct-out circle/2p)
- (struct-out circle/radius)
+ (struct-out circle/r)
  (struct-out circle/3p)
  (struct-out arc/angle)
  (struct-out arc/2p)
@@ -49,7 +49,7 @@
 ;两点圆：
 (struct circle/2p (sp ep))
 ;半径圆：
-(struct circle/radius (cp r))
+(struct circle/r (cp r))
 ;三点圆：
 (struct circle/3p (sp mp ep))
 
@@ -151,4 +151,90 @@
 
 ;圆结构转化为画圆结构：
 (define (circle/cp->draw/circle ccp)
-  void)
+  (let* ([cp (circle/cp-cp ccp)]
+         [ep (circle/cp-ep ccp)]
+         [xc (point-x cp)]
+         [yc (point-y cp)]
+         [xe (point-x ep)]
+         [ye (point-y ep)]
+         [r
+          (sqrt
+           (+
+            (expt (- xe xc) 2)
+            (expt (- ye yc) 2)))]
+         [width (* 2 r)])
+    (values xc yc width width)))
+
+(define (circle/2p->draw/circle c2p)
+  (let* ([sp (circle/2p-sp c2p)]
+         [ep (circle/2p-ep c2p)]
+         [sx (point-x sp)]
+         [sy (point-y sp)]
+         [ex (point-x ep)]
+         [ey (point-y ep)]
+         [cp (point
+              (/ (+ sx ex) 2)
+              (/ (+ sy ey) 2))]
+         [ccp (circle/cp cp ep)])
+    (circle/cp->draw/circle ccp)))
+
+(define (circle/r->draw/circle cr)
+  (let* ([cp (circle/r-cp cr)]
+         [cx (point-x cp)]
+         [cy (point-y cp)]
+         [width (circle/r-r cr)])
+    (values cx cy width width)))
+
+(define (circle/3p->draw/circle c3p)
+  (let ([sp (circle/3p-sp c3p)]
+        [mp (circle/3p-mp c3p)]
+        [ep (circle/3p-ep c3p)])
+    (let-values ([(cp r)
+                  (3p-circle sp mp ep)])
+      (circle/r->draw/circle
+       (circle/r cp r)))))
+
+;通用函数：===============================
+;三点定圆：
+(define (3p-circle sp mp ep)
+  (let* ([sp-x (point-x sp)]
+        [sp-y (point-y sp)]
+        [mp-x (point-x mp)]
+        [mp-y (point-y mp)]
+        [ep-x (point-x ep)]
+        [ep-y (point-y ep)]
+        [ax (- ep-x mp-x)]
+        [ay (- ep-y mp-y)]
+        [bx (- ep-x sp-x)]
+        [by (- ep-y sp-y)]
+        [axy (/
+               (-
+                (- (expt ep-x 2)
+                   (expt mp-x 2))
+                (- (expt ep-y 2)
+                   (expt mp-y 2)))
+               2)]
+        [bxy (/
+               (-
+                (- (expt ep-x 2)
+                   (expt sp-x 2))
+                (- (expt ep-y 2)
+                   (expt sp-y 2)))
+               2)]
+        [cp-x (/
+               (- (* by axy)
+                  (* ay bxy))
+               (- (* ay bx)
+                  (* ax by)))]
+        [cp-y (/
+               (- (* ax bxy)
+                  (* bx axy))
+               (- (* ay bx)
+                  (* ax by)))]
+        [r (sqrt
+            (+
+             (expt (- cp-x ep-x) 2)
+             (expt (- cp-y ep-y) 2)))])
+    (values
+     (point cp-x cp-y)
+     r)))

@@ -1,0 +1,7 @@
+;test.rkt
+#lang slideshow
+
+;测试：========================================
+(define sp (point 0 0))
+(define mp (point 30 70))
+(define ep (point 40 20))
