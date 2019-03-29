@@ -28,8 +28,8 @@
 ;3）：epx^2 + cpx^2 - 2 * epx * cpx + epy^2 + cpy^2 - 2 * epy * cpy = r^2
 
 ;执行等式相减1）-2），1）-3），得到：
-;4）：cpx * (spx - mpx) - cpy * (spy - mpy) =[(spx^2 - mpx^2) + (spy^2 - mpy^2)] / 2
-;5）：cpx * (spx - epx) - cpy * (spy - epy) =[(spx^2 - epx^2) + (spy^2 - epy^2)] / 2
+;4）：cpx * (spx - mpx) + cpy * (spy - mpy) =[(spx^2 - mpx^2) + (spy^2 - mpy^2)] / 2
+;5）：cpx * (spx - epx) + cpy * (spy - epy) =[(spx^2 - epx^2) + (spy^2 - epy^2)] / 2
 
 ;进行代数替代，设：
 ;smx = spx - mpx
@@ -40,12 +40,17 @@
 ;sexy = [(spx^2 - epx^2) + (spy^2 - epy^2)] / 2
 
 ;简化等式为：
-;4）：smx * cpx - smy * cpy = smxy
-;5）：sex * cpx - sey * cpy = sexy
+;4）：smx * cpx + smy * cpy = smxy
+;5）：sex * cpx + sey * cpy = sexy
 
-;再计算得到cpx和cpy：
-;cpx = (sey * smxy - smy * sexy) / (smx * sey - smy * sex)
-;cpy = (sex * smxy - smx * sexy) / (smx * sey - smy * sex)
+;则：
+;6）：cpx = (smxy - smy * cpy) / smx
+
+;再计算得到cpy：
+;cpy = (sexy * smx - sex * smxy) / (smx * sey - sex * smy)
+
+;则：
+;cpx = (smxy * sey - smy * sexy) / (smx * sey - sex * smy)
 
 ;最后计算r值：
 ;r = [(spx - cpx)^2 + (spy - cpy)^2]^(1/2)
@@ -80,20 +85,16 @@
                 (- (expt spy 2)
                    (expt epy 2)))
                2)]
-        [cpx (/
-               (- (* sey smxy)
-                  (* smy sexy))
-               (- (* smx sey)
-                  (* smy sex)))]
         [cpy (/
-               (- (* sex smxy)
-                  (* smx sexy))
-               (- (* smx sey)
-                  (* smy sex)))]
+              (- (* sexy smx)
+                 (* smxy sex))
+              (- (* smx sey)
+                 (* sex smy)))]
+        [cpx (/
+              (- smxy (* smy cpy))
+              smx)]
         [r (sqrt
             (+
              (expt (- cpx epx) 2)
              (expt (- cpy epy) 2)))])
-    (values
-     (point cpx cpy)
-     r)))
+    (values (point cpx cpy) r)))
