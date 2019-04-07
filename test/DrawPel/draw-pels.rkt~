@@ -1,8 +1,0 @@
-#lang racket
-
-(require "pels.rkt")
-
-(define (draw-pels dc)
-  (draw-line/2p dc cur-line/2p)
-  (draw-square dc cur-square)
-  (draw-rectangle/2p dc cur-rectangle/2p))

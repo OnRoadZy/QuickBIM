@@ -6,6 +6,7 @@
  ;图元结构：
  (struct-out point)
  (struct-out line/2p)
+ (struct-out line/ploy)
  (struct-out square)
  (struct-out rectangle/2p)
  (struct-out rectangle/len)
@@ -13,15 +14,21 @@
  (struct-out circle/2p)
  (struct-out circle/r)
  (struct-out circle/3p)
- (struct-out arc/angle)
+ (struct-out arc/a)
  (struct-out arc/2p)
  (struct-out arc/3p)
  (struct-out ellipse)
+ ;通用图元绘制：
+ draw-pel
  ;图元绘制：
  draw-line/2p
  draw-square
  draw-rectangle/2p
- draw-rectangle/len)
+ draw-rectangle/len
+ draw-circle/cp
+ draw-circle/r
+ draw-circle/2p
+ draw-circle/3p)
   
 
 ;定义点结构：
@@ -32,7 +39,7 @@
 (struct line/2p (sp ep))
 
 ;多段线：
-
+(struct line/ploy (sp points))
 ;正方形：
 (struct square (bp l))
 
@@ -54,7 +61,7 @@
 (struct circle/3p (sp mp ep))
 
 ;角圆弧：
-(struct arc/angle (cp r sa ea))
+(struct arc/a (cp r sa ea))
 ;两点圆弧：
 (struct arc/2p (cp sp ep))
 ;三点圆弧：
@@ -72,22 +79,21 @@
 ;nurbs线：
 
 ;绘制单个图元：========================================
-;画两点线（draw-line）：
+
+;draw-point
+
+;draw-line
+;画两点线：
 (define (draw-line/2p dc l2p)
   (let-values
       ([(x1 y1 x2 y2)
         (line/2p->draw/line l2p)])
     (send dc draw-line x1 y1 x2 y2)))
 
-;draw-arc
-;draw-bitmap
-;draw-bitmap-section
-;draw-ellipse
 ;draw-lines
-;draw-path
-;draw-point
-;draw-polygon
-;绘制正方形（draw-rectangle）：
+
+;draw-rectangle
+;绘制正方形：
 (define (draw-square dc sq)
   (let-values
       ([(x y width height)
@@ -95,7 +101,7 @@
     (send dc draw-rectangle
           x y width height)))
 
-;绘制两点矩形（draw-rectangle）：
+;绘制两点矩形：
 (define (draw-rectangle/2p dc r2p)
   (let-values
       ([(x y width height)
@@ -103,7 +109,7 @@
     (send dc draw-rectangle
           x y width height)))
 
-;绘制两点矩形（draw-rectangle）：
+;绘制两点矩形：
 (define (draw-rectangle/len dc rlen)
   (let-values
       ([(x y width height)
@@ -112,8 +118,58 @@
           x y width height)))
                            
 ;draw-rounded-rectangle
-;draw-spline
+;draw-polygon
+
+;draw-ellipse
+;画中心圆：
+(define (draw-circle/cp dc pel)
+  (let-values
+      ([(x y w h) (circle/cp->draw/circle pel)])
+    (send dc draw-ellipse x y w h)))
+
+;画半径圆：
+(define (draw-circle/r dc pel)
+  (let-values
+      ([(x y w h) (circle/r->draw/circle pel)])
+    (send dc draw-ellipse x y w h)))
+
+;画两点圆：
+(define (draw-circle/2p dc pel)
+  (let-values
+      ([(x y w h) (circle/2p->draw/circle pel)])
+    (send dc draw-ellipse x y w h)))
+
+;画三点圆：
+(define (draw-circle/3p dc pel)
+  (let-values
+      ([(x y w h) (circle/3p->draw/circle pel)])
+    (send dc draw-ellipse x y w h)))
+
+;draw-arc
+;画角度圆弧：
+(define (draw-arc/a dc pel)
+  (let-values
+      ([(x y w h sa ea) (arc/a->draw/arc pel)])
+    (send dc draw-arc x y w h sa ea)))
+
+;画两点圆弧：
+(define (draw-arc/2p dc pel)
+  (let-values
+      ([(x y w h sa ea) (arc/2p->draw/arc pel)])
+    (send dc draw-arc x y w h sa ea)))
+
+;画三点圆弧：
+(define (draw-arc/3p dc pel)
+  (let-values
+      ([(x y w h sa ea) (arc/3p->draw/arc pel)])
+    (send dc draw-arc x y w h sa ea)))
+
+;draw-bitmap
+;draw-bitmap-section
+
 ;draw-text
+;draw-spline
+;draw-path
 
 ;通用函数：========================================
 ;两点线结构转化为画线结构：
@@ -163,7 +219,7 @@
             (expt (- xe xc) 2)
             (expt (- ye yc) 2)))]
          [width (* 2 r)])
-    (values xc yc width width)))
+    (values (- xc r) (- yc r) width width)))
 
 (define (circle/2p->draw/circle c2p)
   (let* ([sp (circle/2p-sp c2p)]
@@ -182,8 +238,8 @@
   (let* ([cp (circle/r-cp cr)]
          [cx (point-x cp)]
          [cy (point-y cp)]
-         [width (circle/r-r cr)])
-    (values cx cy width width)))
+         [r (circle/r-r cr)])
+    (values (- cx r) (- cy r) (+ r r) (+ r r))))
 
 (define (circle/3p->draw/circle c3p)
   (let ([sp (circle/3p-sp c3p)]
@@ -194,47 +250,122 @@
       (circle/r->draw/circle
        (circle/r cp r)))))
 
+;圆弧结构转换为画圆弧结构：
+(define (arc/a->draw/arc aa)
+  (let ([cp (arc/a-cp aa)]
+        [r (arc/a-r aa)]
+        [sa (arc/a-sa aa)]
+        [ea (arc/a-ea aa)])
+    (values
+     (- (point-x cp) r)
+     (- (point-y cp) r)
+     (+ r r) (+ r r)
+     sa ea)))
+
+(define (arc/2p->draw/arc a2p)
+  (let* ([cp (arc/2p-cp a2p)]
+         [sp (arc/2p-sp a2p)]
+         [ep (arc/2p-ep a2p)]
+         [r (len-2p cp sp)]
+         [sa (angle-2p cp sp)]
+         [ea (angle-2p cp ep)]
+         [aa (arc/a cp r sa ea)])
+    (arc/a->draw/arc aa)))
+
+(define (arc/3p->draw/arc a3p)
+  (let ([sp (arc/3p-sp a3p)]
+        [mp (arc/3p-mp a3p)]
+        [ep (arc/3p-ep a3p)])
+    (let-values
+        ([(cp r) (3p-circle sp mp ep)])
+      (arc/2p->draw/arc
+       (arc/2p cp sp ep)))))
+
 ;通用函数：===============================
+;两点之间的距离：
+(define (len-2p sp ep)
+  (let ([sx (point-x sp)]
+        [sy (point-y sp)]
+        [ex (point-x ep)]
+        [ey (point-y ep)])
+    (sqrt
+     (+ (expt (- ex sx) 2)
+        (expt (- ey sy) 2)))))
+
+;两点之间的角度（弧度）：
+(define (angle-2p sp ep)
+  (let ([sx (point-x sp)]
+        [sy (point-y sp)]
+        [ex (point-x ep)]
+        [ey (point-y ep)])
+    (atan (/ (- ey sy)
+             (- ex sx)))))
+
 ;三点定圆：
 (define (3p-circle sp mp ep)
-  (let* ([sp-x (point-x sp)]
-        [sp-y (point-y sp)]
-        [mp-x (point-x mp)]
-        [mp-y (point-y mp)]
-        [ep-x (point-x ep)]
-        [ep-y (point-y ep)]
-        [ax (- ep-x mp-x)]
-        [ay (- ep-y mp-y)]
-        [bx (- ep-x sp-x)]
-        [by (- ep-y sp-y)]
-        [axy (/
-               (-
-                (- (expt ep-x 2)
-                   (expt mp-x 2))
-                (- (expt ep-y 2)
-                   (expt mp-y 2)))
+  (let* ([spx (point-x sp)]
+         [spy (point-y sp)]
+         [mpx (point-x mp)]
+         [mpy (point-y mp)]
+         [epx (point-x ep)]
+         [epy (point-y ep)]
+         [smx (- spx mpx)]
+         [smy (- spy mpy)]
+         [sex (- spx epx)]
+         [sey (- spy epy)]
+         [smxy (/
+               (+
+                (- (expt spx 2)
+                   (expt mpx 2))
+                (- (expt spy 2)
+                   (expt mpy 2)))
                2)]
-        [bxy (/
-               (-
-                (- (expt ep-x 2)
-                   (expt sp-x 2))
-                (- (expt ep-y 2)
-                   (expt sp-y 2)))
+        [sexy (/
+               (+
+                (- (expt spx 2)
+                   (expt epx 2))
+                (- (expt spy 2)
+                   (expt epy 2)))
                2)]
-        [cp-x (/
-               (- (* by axy)
-                  (* ay bxy))
-               (- (* ay bx)
-                  (* ax by)))]
-        [cp-y (/
-               (- (* ax bxy)
-                  (* bx axy))
-               (- (* ay bx)
-                  (* ax by)))]
+        [cpy (/
+              (- (* sexy smx)
+                 (* smxy sex))
+              (- (* smx sey)
+                 (* sex smy)))]
+        [cpx (/
+              (- smxy (* smy cpy))
+              smx)]
         [r (sqrt
             (+
-             (expt (- cp-x ep-x) 2)
-             (expt (- cp-y ep-y) 2)))])
-    (values
-     (point cp-x cp-y)
-     r)))
+             (expt (- cpx epx) 2)
+             (expt (- cpy epy) 2)))])
+    (values (point cpx cpy) r)))
+
+(define (draw-pel dc pel)
+  (cond
+    ;线：
+    [(line/2p? pel)
+     (draw-line/2p dc pel)]
+    ;框：
+    [(square? pel)
+     (draw-square dc pel)]
+    [(rectangle/2p? pel)
+     (draw-rectangle/2p dc pel)]
+    [(rectangle/len? pel)
+     (draw-rectangle/len dc pel)]
+    ;圆：
+    [(circle/cp? pel)
+     (draw-circle/cp dc pel)]
+    [(circle/r? pel)
+     (draw-circle/r dc pel)]
+    [(circle/2p? pel)
+     (draw-circle/2p dc pel)]
+    [(circle/3p? pel)
+     (draw-circle/3p dc pel)]
+    ;圆弧：
+    [(arc/a? pel)
+     (draw-arc/a dc pel)]
+    [(arc/2p? pel)
+     (draw-arc/2p dc pel)]
+    [(arc/3p? pel)
+     (draw-arc/3p dc pel)]))
