@@ -5,30 +5,49 @@
 (provide
  ;图元结构：
  (struct-out point)
+ 
  (struct-out line/2p)
- (struct-out line/ploy)
+ 
  (struct-out square)
  (struct-out rectangle/2p)
  (struct-out rectangle/len)
- (struct-out circle/cp)
+ 
+ (struct-out circle/1p)
  (struct-out circle/2p)
  (struct-out circle/r)
  (struct-out circle/3p)
+
+ (struct-out ellipse/cp)
+ (struct-out ellipse/2p)
+ 
  (struct-out arc/a)
  (struct-out arc/2p)
  (struct-out arc/3p)
- (struct-out ellipse)
+
+ (struct-out poly/ps)
+ (struct-out poly/n)
+
+ (struct-out lines)
+ (struct-out line/ploy)
+ (struct-out spline)
+ (struct-out bezier)
+ 
  ;通用图元绘制：
  draw-pel
  ;图元绘制：
  draw-line/2p
- draw-square
+
  draw-rectangle/2p
  draw-rectangle/len
- draw-circle/cp
+ draw-square
+ 
  draw-circle/r
+ draw-circle/1p
  draw-circle/2p
- draw-circle/3p)
+ draw-circle/3p
+
+ draw-ellipse/cp
+ draw-ellipse/2p)
   
 
 ;定义点结构：
@@ -38,27 +57,26 @@
 ;两点线：
 (struct line/2p (sp ep))
 
-;多段线：
-(struct line/ploy (sp points))
+;长方形：
+(struct rectangle/2p (sp ep))
+(struct rectangle/len (bp w h))
+
 ;正方形：
 (struct square (bp l))
 
-;长方形：
-(struct rectangle/2p (sp ep))
-(struct rectangle/len (bp l w))
-
-;正多边形：
-
-;多边形：
-
-;点圆：
-(struct circle/cp (cp ep))
-;两点圆：
-(struct circle/2p (sp ep))
 ;半径圆：
 (struct circle/r (cp r))
+;点圆：
+(struct circle/1p (cp ep))
+;两点圆：
+(struct circle/2p (sp ep))
 ;三点圆：
 (struct circle/3p (sp mp ep))
+
+;圆心椭圆：
+(struct ellipse/cp (cp rh rv))
+;两点椭圆：
+(struct ellipse/2p (sp ep))
 
 ;角圆弧：
 (struct arc/a (cp r sa ea))
@@ -67,16 +85,21 @@
 ;三点圆弧：
 (struct arc/3p (sp mp ep))
 
-;椭圆：
-(struct ellipse (cp hl vl))
-;椭圆弧：
-;(struct elliptic-arc (cp hl vl sa ea))
+;多点多边形：
+(struct poly/ps (sp ep mps))
+;边数正多边形：
+(struct poly/n (cp r num))
 
+;多线段：
+(struct lines (sp pts))
+;多段线：
+(struct line/ploy (sp pts))
 ;spline线：
-
+(struct spline (sp ep cep))
 ;B样条线：
-
+(struct bezier (sp csp ep cep))
 ;nurbs线：
+
 
 ;绘制单个图元：========================================
 
@@ -89,8 +112,6 @@
       ([(x1 y1 x2 y2)
         (line/2p->draw/line l2p)])
     (send dc draw-line x1 y1 x2 y2)))
-
-;draw-lines
 
 ;draw-rectangle
 ;绘制正方形：
@@ -116,15 +137,12 @@
         (rectangle/len->draw/rectangle rlen)])
     (send dc draw-rectangle
           x y width height)))
-                           
-;draw-rounded-rectangle
-;draw-polygon
 
 ;draw-ellipse
 ;画中心圆：
-(define (draw-circle/cp dc pel)
+(define (draw-circle/1p dc pel)
   (let-values
-      ([(x y w h) (circle/cp->draw/circle pel)])
+      ([(x y w h) (circle/1p->draw/circle pel)])
     (send dc draw-ellipse x y w h)))
 
 ;画半径圆：
@@ -143,6 +161,18 @@
 (define (draw-circle/3p dc pel)
   (let-values
       ([(x y w h) (circle/3p->draw/circle pel)])
+    (send dc draw-ellipse x y w h)))
+
+;画圆心椭圆：
+(define (draw-ellipse/cp dc ecp)
+  (let-values
+      ([(x y w h) (ellipse/cp->draw/ellipse ecp)])
+    (send dc draw-ellipse x y w h)))
+
+;画两点椭圆：
+(define (draw-ellipse/2p dc e2p)
+  (let-values
+      ([(x y w h) (ellipse/2p->draw/ellipse e2p)])
     (send dc draw-ellipse x y w h)))
 
 ;draw-arc
@@ -168,6 +198,9 @@
 ;draw-bitmap-section
 
 ;draw-text
+;draw-lines
+;draw-rounded-rectangle
+;draw-polygon
 ;draw-spline
 ;draw-path
 
@@ -179,14 +212,6 @@
    (point-y (line/2p-sp l2p))
    (point-x (line/2p-ep l2p))
    (point-y (line/2p-ep l2p))))
-
-;正方形结构转化为画矩形结构：
-(define (square->draw/rectangle sq)
-  (values
-   (point-x (square-bp sq))
-   (point-y (square-bp sq))
-   (square-l sq)
-   (square-l sq)))
 
 ;矩形结构转化为画矩形结构：
 (define (rectangle/2p->draw/rectangle r2p)
@@ -202,13 +227,28 @@
   (values
    (point-x (rectangle/len-bp rlen))
    (point-y (rectangle/len-bp rlen))
-   (rectangle/len-w rlen)
-   (rectangle/len-l rlen)))
+   (rectangle/len-h rlen)
+   (rectangle/len-w rlen)))
+
+;正方形结构转化为画矩形结构：
+(define (square->draw/rectangle sq)
+  (values
+   (point-x (square-bp sq))
+   (point-y (square-bp sq))
+   (square-l sq)
+   (square-l sq)))
 
 ;圆结构转化为画圆结构：
-(define (circle/cp->draw/circle ccp)
-  (let* ([cp (circle/cp-cp ccp)]
-         [ep (circle/cp-ep ccp)]
+(define (circle/r->draw/circle cr)
+  (let* ([cp (circle/r-cp cr)]
+         [cx (point-x cp)]
+         [cy (point-y cp)]
+         [r (circle/r-r cr)])
+    (values (- cx r) (- cy r) (+ r r) (+ r r))))
+
+(define (circle/1p->draw/circle ccp)
+  (let* ([cp (circle/1p-cp ccp)]
+         [ep (circle/1p-ep ccp)]
          [xc (point-x cp)]
          [yc (point-y cp)]
          [xe (point-x ep)]
@@ -231,15 +271,8 @@
          [cp (point
               (/ (+ sx ex) 2)
               (/ (+ sy ey) 2))]
-         [ccp (circle/cp cp ep)])
-    (circle/cp->draw/circle ccp)))
-
-(define (circle/r->draw/circle cr)
-  (let* ([cp (circle/r-cp cr)]
-         [cx (point-x cp)]
-         [cy (point-y cp)]
-         [r (circle/r-r cr)])
-    (values (- cx r) (- cy r) (+ r r) (+ r r))))
+         [ccp (circle/1p cp ep)])
+    (circle/1p->draw/circle ccp)))
 
 (define (circle/3p->draw/circle c3p)
   (let ([sp (circle/3p-sp c3p)]
@@ -249,6 +282,33 @@
                   (3p-circle sp mp ep)])
       (circle/r->draw/circle
        (circle/r cp r)))))
+
+;圆心椭圆结构转换为画椭圆结构：
+(define (ellipse/cp->draw/ellipse ecp)
+  (let ([cp (ellipse/cp-cp ecp)]
+        [rh (ellipse/cp-rh ecp)]
+        [rv (ellipse/cp-rv ecp)])
+    (values
+     (- (point-x cp) rh)
+     (- (point-y cp) rv)
+     ( * 2 rh) (* 2 rv))))
+
+(define (ellipse/2p->draw/ellipse e2p)
+  (let* ([sp (ellipse/2p-sp e2p)]
+         [ep (ellipse/2p-ep e2p)]
+         [sp-x (point-x sp)]
+         [sp-y (point-y sp)]
+         [ep-x (point-x ep)]
+         [ep-y (point-y ep)]
+         [bp-x (if (< sp-x ep-x)
+                   sp-x
+                   ep-x)]
+         [bp-y (if (< sp-y ep-y)
+                   sp-y
+                   ep-y)]
+         [dh (abs (- ep-x sp-x))]
+         [dv (abs (- ep-y sp-y))])
+    (values bp-x bp-y dh dv)))
 
 ;圆弧结构转换为画圆弧结构：
 (define (arc/a->draw/arc aa)
@@ -280,6 +340,8 @@
         ([(cp r) (3p-circle sp mp ep)])
       (arc/2p->draw/arc
        (arc/2p cp sp ep)))))
+
+;
 
 ;通用函数：===============================
 ;两点之间的距离：
@@ -354,14 +416,19 @@
     [(rectangle/len? pel)
      (draw-rectangle/len dc pel)]
     ;圆：
-    [(circle/cp? pel)
-     (draw-circle/cp dc pel)]
     [(circle/r? pel)
      (draw-circle/r dc pel)]
+    [(circle/1p? pel)
+     (draw-circle/1p dc pel)]
     [(circle/2p? pel)
      (draw-circle/2p dc pel)]
     [(circle/3p? pel)
      (draw-circle/3p dc pel)]
+    ;椭圆：
+    [(ellipse/cp? pel)
+     (draw-ellipse/cp dc pel)]
+    [(ellipse/2p? pel)
+     (draw-ellipse/2p dc pel)]
     ;圆弧：
     [(arc/a? pel)
      (draw-arc/a dc pel)]

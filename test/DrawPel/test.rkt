@@ -31,7 +31,7 @@
    60 100)
 
 ;圆：
-  (circle/cp
+  (circle/1p
    (point 350 100)
    (point 400 150))
 
@@ -48,12 +48,21 @@
    (point 100 260)
    (point 200 400))
 
+;椭圆：
+  (ellipse/cp
+   (point 350 400)
+   70 30)
+
+  (ellipse/2p
+   (point 400 300)
+   (point 800 600))
+
 ;圆弧：
   (arc/a
    (point 120 200)
    40
    (degrees->radians 10)
-   (degrees->radians 45))
+   (degrees->radians 180))
 
   (arc/2p
    (point 200 200)
@@ -152,7 +161,9 @@
   (new group-box-panel%
        [parent pane/toolbar]
        [label lb]
-       [alignment (list 'left 'top )]))
+       [alignment (list 'left 'top )]
+       [stretchable-width #f]
+       [stretchable-height #f]))
 ;定义组框：
 (define tg/manage (toolgroup "管理"))
 (define tg/line (toolgroup "画线"))
@@ -191,14 +202,18 @@
   (toolbutton gp/rectangle "两点矩形" (draw-one-pel rectangle/2p?)))
 (define tb/rectangle-len
   (toolbutton gp/rectangle "长度矩形" (draw-one-pel rectangle/len?)))
-(define tb/circle-cp
-  (toolbutton gp/circle "中心圆" (draw-one-pel circle/cp?)))
-(define tb/circle-2p
-  (toolbutton gp/circle "两点圆" (draw-one-pel circle/2p?)))
 (define tb/circle-r
   (toolbutton gp/circle "半径圆" (draw-one-pel circle/r?)))
+(define tb/circle-1p
+  (toolbutton gp/circle "中心圆" (draw-one-pel circle/1p?)))
+(define tb/circle-2p
+  (toolbutton gp/circle "两点圆" (draw-one-pel circle/2p?)))
 (define tb/circle-3p
   (toolbutton gp/circle "三点圆" (draw-one-pel circle/3p?)))
+(define tb/ellipse-cp
+  (toolbutton gp/circle "圆心椭圆" (draw-one-pel ellipse/cp?)))
+(define tb/ellipse-2p
+  (toolbutton gp/circle "两点椭圆" (draw-one-pel ellipse/2p?)))
 (define tb/arc-a
   (toolbutton gp/arc "角圆弧" (draw-one-pel arc/a?)))
 (define tb/arc-2p
