@@ -24,8 +24,8 @@
  (struct-out arc/2p)
  (struct-out arc/3p)
 
- (struct-out poly/ps)
- (struct-out poly/n)
+ (struct-out polygon/pts)
+ (struct-out polygon/n)
 
  (struct-out lines)
  (struct-out line/ploy)
@@ -47,13 +47,15 @@
  draw-circle/3p
 
  draw-ellipse/cp
- draw-ellipse/2p)
+ draw-ellipse/2p
+
+ draw-polygon/pts)
   
 
 ;定义点结构：
 (struct point (x y))
 
-;定义图原结构：==============================
+;定义图元结构：==============================
 ;两点线：
 (struct line/2p (sp ep))
 
@@ -86,9 +88,9 @@
 (struct arc/3p (sp mp ep))
 
 ;多点多边形：
-(struct poly/ps (sp ep mps))
+(struct polygon/pts (bp pts))
 ;边数正多边形：
-(struct poly/n (cp r num))
+(struct polygon/n (bp r num))
 
 ;多线段：
 (struct lines (sp pts))
@@ -194,13 +196,29 @@
       ([(x y w h sa ea) (arc/3p->draw/arc pel)])
     (send dc draw-arc x y w h sa ea)))
 
+;draw-polygon
+;画多点多边形：
+(define (draw-polygon/pts dc ppts)
+  (let-values ([(bp pts)
+                (polygon/pts->draw/polygon ppts)])
+    (send dc draw-polygon
+          pts
+          (point-x bp)
+          (point-y bp))))
+
+(define (draw-polygon/n dc pn)
+  (let-values ([(cp pts)
+                (polygon/n->draw/polygon pn)])
+    (send dc draw-polygon
+          pts
+          (point-x cp)
+          (point-y cp))))
+
 ;draw-bitmap
 ;draw-bitmap-section
-
 ;draw-text
 ;draw-lines
 ;draw-rounded-rectangle
-;draw-polygon
 ;draw-spline
 ;draw-path
 
@@ -341,9 +359,53 @@
       (arc/2p->draw/arc
        (arc/2p cp sp ep)))))
 
-;
+;多边形结构转换为画多边形结构：
+(define (polygon/pts->draw/polygon ppts)
+  (let* ([bp (polygon/pts-bp ppts)]
+         [pts (polygon/pts-pts ppts)])
+    (if (< (length pts) 3)
+        #f
+        (values
+         bp
+         (add-points-to-list
+          null
+          pts)))))
+
+(define (polygon/n->draw/polygon pn)
+  (let* ([cp (polygon/n-bp pn)]
+         [r (polygon/n-r pn)]
+         [num (polygon/n-num pn)]
+         [a (/ (* 2 pi) num)]
+         [ls null])
+    (values
+     cp
+     (add-ap-to-list a r ls 0 num))))
+
 
 ;通用函数：===============================
+;添加角度对应点到列表：
+(define (add-ap-to-list a r result i num)
+  (if (= i num)
+      result
+      (let ([x (* r (cos (* a i)))]
+            [y (* r (sin (* a i)))])
+        (add-ap-to-list
+         a r
+         (cons (cons x y)
+                   result)
+         (+ i 1) num))))
+
+;添加点到列表：
+(define (add-points-to-list result pts)
+  (if (empty? pts)
+      result
+      (let* ([pt (car pts)]
+             [x (point-x pt)]
+             [y (point-y pt)])
+        (add-points-to-list
+         (cons (cons x y) result)
+         (cdr pts)))))
+
 ;两点之间的距离：
 (define (len-2p sp ep)
   (let ([sx (point-x sp)]
@@ -435,4 +497,9 @@
     [(arc/2p? pel)
      (draw-arc/2p dc pel)]
     [(arc/3p? pel)
-     (draw-arc/3p dc pel)]))
+     (draw-arc/3p dc pel)]
+    ;多边形：
+    [(polygon/pts? pel)
+     (draw-polygon/pts dc pel)]
+    [(polygon/n? pel)
+     (draw-polygon/n dc pel)]))

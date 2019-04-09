@@ -72,7 +72,23 @@
   (arc/3p
    (point 200 200)
    (point 250 240)
-   (point 220 160))))
+   (point 220 160))
+
+  ;多边形：
+  (polygon/pts
+   (point 200 300)
+   (list
+    (point 20 70) 
+    (point 40 90) 
+    (point 60 110) 
+    (point 90 110) 
+    (point 130 90) 
+    (point 100 70)))
+
+  (polygon/n
+   (point 300 350)
+   200 5)
+  ))
 
 ;绘制实例图元：===========================
 ;绘制所有图元：
@@ -167,9 +183,10 @@
 ;定义组框：
 (define tg/manage (toolgroup "管理"))
 (define tg/line (toolgroup "画线"))
-(define tg/rectangle (toolgroup "画框"))
+(define tg/rectangle (toolgroup "画矩形"))
 (define tg/circle (toolgroup "画圆"))
 (define tg/arc (toolgroup "画圆弧"))
+(define tg/polygon (toolgroup "画多边形"))
 
 ;工具栏组框集装箱定义：
 (define-syntax-rule (group-pane p)
@@ -181,6 +198,7 @@
 (define gp/rectangle (group-pane tg/rectangle))
 (define gp/circle (group-pane tg/circle))
 (define gp/arc (group-pane tg/arc))
+(define gp/polygon (group-pane tg/polygon))
 
 ;工具按钮通用宏：
 (define-syntax-rule (toolbutton p lb cb)
@@ -220,6 +238,10 @@
   (toolbutton gp/arc "两点圆弧" (draw-one-pel arc/2p?)))
 (define tb/arc-3p
   (toolbutton gp/arc "三点圆弧" (draw-one-pel arc/3p?)))
+(define tb/polygon-pts
+  (toolbutton gp/polygon "多点多边形" (draw-one-pel polygon/pts?)))
+(define tb/polygon-n
+  (toolbutton gp/polygon "边数正多边形" (draw-one-pel polygon/n?)))
 
 ;视图区:
 (define pane/view
