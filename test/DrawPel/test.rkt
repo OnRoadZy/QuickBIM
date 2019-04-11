@@ -73,8 +73,8 @@
    (point 200 200)
    (point 250 240)
    (point 220 160))
-
-  ;多边形：
+  
+;多边形：
   (polygon/pts
    (point 200 300)
    (list
@@ -87,7 +87,49 @@
 
   (polygon/n
    (point 300 350)
-   200 5)
+   200 6)
+
+;多线段：
+  (lines/pts
+   (point 300 100)
+   (list
+    (point 100 100)
+    (point 130 200)
+    (point 170 70)
+    (point 210 200)
+    (point 150 50)
+    (point 230 50)))
+
+;文字：
+  (text/style
+   "左 对齐文字"
+   (point 100 300)
+   'left)
+
+  (text/style
+   "右 对齐文字"
+   (point 100 330)
+   'right)
+
+  (text/style
+   "中 对齐文字"
+   (point 100 360)
+   'middle)
+
+  (text/style
+   "中心 对齐文字"
+   (point 100 390)
+   'center)
+
+  (text/width
+   "固定长度 文字"
+   (point 1500 420)
+   200)
+
+  (bitmap/bp
+   "test.jpg"
+   (point 800 200)
+   0.5)
   ))
 
 ;绘制实例图元：===========================
@@ -187,6 +229,8 @@
 (define tg/circle (toolgroup "画圆"))
 (define tg/arc (toolgroup "画圆弧"))
 (define tg/polygon (toolgroup "画多边形"))
+(define tg/text (toolgroup "绘制文字"))
+(define tg/bitmap (toolgroup "绘制位图"))
 
 ;工具栏组框集装箱定义：
 (define-syntax-rule (group-pane p)
@@ -199,6 +243,8 @@
 (define gp/circle (group-pane tg/circle))
 (define gp/arc (group-pane tg/arc))
 (define gp/polygon (group-pane tg/polygon))
+(define gp/text (group-pane tg/text))
+(define gp/bitmap (group-pane tg/bitmap))
 
 ;工具按钮通用宏：
 (define-syntax-rule (toolbutton p lb cb)
@@ -214,6 +260,8 @@
   (toolbutton gp/manage "全部绘制" (draw-pels)))
 (define tb/line-2p
   (toolbutton gp/line "两点线" (draw-one-pel line/2p?)))
+(define tb/lines-pts
+  (toolbutton gp/line "多线段" (draw-one-pel lines/pts?)))
 (define tb/square
   (toolbutton gp/rectangle "正方形" (draw-one-pel square?)))
 (define tb/rectangle-2p
@@ -242,6 +290,18 @@
   (toolbutton gp/polygon "多点多边形" (draw-one-pel polygon/pts?)))
 (define tb/polygon-n
   (toolbutton gp/polygon "边数正多边形" (draw-one-pel polygon/n?)))
+(define tb/text-left
+  (toolbutton gp/text "左对齐文字" (draw-one-pel text/left?)))
+(define tb/text-right
+  (toolbutton gp/text "右对齐文字" (draw-one-pel text/right?)))
+(define tb/text-middle
+  (toolbutton gp/text "中间对齐文字" (draw-one-pel text/middle?)))
+(define tb/text-center
+  (toolbutton gp/text "中心对齐文字" (draw-one-pel text/center?)))
+(define tb/text-width
+  (toolbutton gp/text "固定宽度文字" (draw-one-pel text/width?)))
+(define tb/bitmap-bp
+  (toolbutton gp/bitmap "基点位图" (draw-one-pel bitmap/bp?)))
 
 ;视图区:
 (define pane/view
@@ -283,7 +343,8 @@
 ;在画布画图:
 (define (paint canvas dc)
   ;初始化画布:
-  (send canvas set-canvas-background (make-object color% 0 0 0 1.0))
+  (send canvas set-canvas-background
+        (make-object color% 0 0 0 1.0))
   ;绘制欢迎文字:
   (send dc set-text-foreground "white")
   (send dc set-scale 1 1)
@@ -299,7 +360,10 @@
   (send dc set-brush
         (make-object color%
           0 255 255)
-        'transparent))
+        'transparent)
+  ;设置文字前景色：
+  (send dc set-text-foreground
+        (make-object color% 255 0 255)))
 
 ;显示框架：=========================
 ;显示主框架视图：

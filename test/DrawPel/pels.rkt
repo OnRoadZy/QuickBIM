@@ -27,10 +27,15 @@
  (struct-out polygon/pts)
  (struct-out polygon/n)
 
- (struct-out lines)
+ (struct-out lines/pts)
  (struct-out line/ploy)
  (struct-out spline)
  (struct-out bezier)
+
+ (struct-out text/style)
+ (struct-out text/width)
+
+ (struct-out bitmap/bp)
  
  ;通用图元绘制：
  draw-pel
@@ -49,9 +54,22 @@
  draw-ellipse/cp
  draw-ellipse/2p
 
- draw-polygon/pts)
-  
+ draw-polygon/pts
+ draw-polygon/n
 
+ draw-lines/pts
+
+ draw-text/style
+ draw-text/width
+
+ draw-bitmap/bp
+
+ ;判断函数：
+ text/left?
+ text/right?
+ text/middle?
+ text/center?)
+  
 ;定义点结构：
 (struct point (x y))
 
@@ -93,15 +111,23 @@
 (struct polygon/n (bp r num))
 
 ;多线段：
-(struct lines (sp pts))
+(struct lines/pts (bp pts))
 ;多段线：
-(struct line/ploy (sp pts))
+(struct line/ploy (bp pts))
 ;spline线：
 (struct spline (sp ep cep))
 ;B样条线：
 (struct bezier (sp csp ep cep))
 ;nurbs线：
 
+;单点文字：
+;style：'left，'right，'middle，'center
+(struct text/style (text bp style))
+;定宽文字：
+(struct text/width (text bp width))
+
+;单点位图：
+(struct bitmap/bp (source bp scale))
 
 ;绘制单个图元：========================================
 
@@ -116,6 +142,7 @@
     (send dc draw-line x1 y1 x2 y2)))
 
 ;draw-rectangle
+;draw-rounded-rectangle
 ;绘制正方形：
 (define (draw-square dc sq)
   (let-values
@@ -206,6 +233,7 @@
           (point-x bp)
           (point-y bp))))
 
+;画n边正多边形：
 (define (draw-polygon/n dc pn)
   (let-values ([(cp pts)
                 (polygon/n->draw/polygon pn)])
@@ -214,11 +242,49 @@
           (point-x cp)
           (point-y cp))))
 
+;draw-lines
+;画多线段：
+(define (draw-lines/pts dc lpts)
+  (let-values ([(bp pts)
+                (lines/pts->draw/lines lpts)])
+    (send dc draw-lines
+          pts
+          (point-x bp) (point-y bp))))
+
+;draw-text
+;绘制定位类型文字：
+(define (draw-text/style dc ts)
+  (let-values ([(txt x y scale-x)
+                (text/style->draw/text dc ts)]
+               [(scale-x/old scale-y/old)
+                (send dc get-scale)])
+    (send dc set-scale scale-x 1)
+    (send dc draw-text txt x y)
+    (send dc set-scale scale-x/old scale-y/old)))
+
+;绘制指定宽度文字：
+(define (draw-text/width dc tw)
+  (let-values ([(txt x y scale-x)
+                (text/width->draw/text dc tw)]
+               [(scale-x/old scale-y/old)
+                (send dc get-scale)])
+    (send dc set-scale scale-x 1)
+    (send dc draw-text txt x y)
+    (send dc set-scale scale-x/old scale-y/old)))
+
 ;draw-bitmap
 ;draw-bitmap-section
-;draw-text
-;draw-lines
-;draw-rounded-rectangle
+;绘制位图：
+(define (draw-bitmap/bp dc bbp)
+  (let-values ([(src x y scale)
+                (bitmap/bp->draw/bitmap bbp)]
+               [(scale-x/old scale-y/old)
+                (send dc get-scale)])
+    (let ([bmp (read-bitmap src)])
+      (send dc set-scale scale scale)
+      (send dc draw-bitmap bmp x y)
+      (send dc set-scale scale-x/old scale-y/old))))
+
 ;draw-spline
 ;draw-path
 
@@ -367,9 +433,7 @@
         #f
         (values
          bp
-         (add-points-to-list
-          null
-          pts)))))
+         (add-points-to-list null pts)))))
 
 (define (polygon/n->draw/polygon pn)
   (let* ([cp (polygon/n-bp pn)]
@@ -381,6 +445,85 @@
      cp
      (add-ap-to-list a r ls 0 num))))
 
+;多线段结构转换为画多线段结构：
+(define (lines/pts->draw/lines lpts)
+  (let ([bp (lines/pts-bp lpts)]
+        [pts (lines/pts-pts lpts)])
+    (values
+     bp
+     (add-points-to-list null pts))))
+
+;文字结构转换为画文字结构：
+(define (text/style->draw/text dc ts)
+  (let ([txt (text/style-text ts)]
+        [bp (text/style-bp ts)]
+        [style (text/style-style ts)])
+    (let-values ([(w h bh eh)
+                  (send dc get-text-extent txt)])
+      (cond
+        [(eq? style 'left)
+         (let ([y (- (point-y bp) h)])
+           (values txt (point-x bp) y 1))]
+        [(eq? style 'right)
+         (let ([x (- (point-x bp) w)]
+               [y (- (point-y bp) h)])
+           (values txt x y 1))]
+        [(eq? style 'middle)
+         (let ([x (- (point-x bp) (/ w 2))]
+               [y (- (point-y bp) h)])
+           (values txt x y 1))]
+        [(eq? style 'center)
+         (let ([x (- (point-x bp) (/ w 2))]
+               [y (- (point-y bp) (/ h 2))])
+           (values txt x y 1))]))))
+
+(define (text/width->draw/text dc tw)
+  (let ([txt (text/width-text tw)]
+        [bp (text/width-bp tw)]
+        [width (text/width-width tw)])
+    (let-values ([(w h bh eh)
+                  (send dc get-text-extent txt)])
+      (let ([scale-x (/ width w)]
+            [x (point-x bp)]
+            [y (- (point-y bp) h)])
+        (values txt x y scale-x)))))
+
+;位图结构转换为绘制位图结构：
+(define (bitmap/bp->draw/bitmap bbp)
+  (let ([src (bitmap/bp-source bbp)]
+        [bp (bitmap/bp-bp bbp)]
+        [scale (bitmap/bp-scale bbp)])
+    (values src
+            (point-x bp) (point-y bp)
+            scale)))
+
+;判断绘制文字类型：===============================
+#|(define-syntax-rule (just-text style)
+  (define (text/`style,? pel)
+    (if (text/style? pel)
+        (if (eq? '`style, (text/style-style pel))
+            #t #f)
+        #f)))|#
+(define (text/left? pel)
+  (if (text/style? pel)
+      (if (eq? 'left (text/style-style pel))
+          #t #f)
+      #f))
+(define (text/right? pel)
+  (if (text/style? pel)
+      (if (eq? 'right (text/style-style pel))
+          #t #f)
+      #f))
+(define (text/middle? pel)
+  (if (text/style? pel)
+      (if (eq? 'middle (text/style-style pel))
+          #t #f)
+      #f))
+(define (text/center? pel)
+  (if (text/style? pel)
+      (if (eq? 'center (text/style-style pel))
+          #t #f)
+      #f))
 
 ;通用函数：===============================
 ;添加角度对应点到列表：
@@ -502,4 +645,19 @@
     [(polygon/pts? pel)
      (draw-polygon/pts dc pel)]
     [(polygon/n? pel)
-     (draw-polygon/n dc pel)]))
+     (draw-polygon/n dc pel)]
+
+    ;多线段：
+    [(lines/pts? pel)
+     (draw-lines/pts dc pel)]
+
+    ;文字：
+    [(text/style? pel)
+     (draw-text/style dc pel)]
+    [(text/width? pel)
+     (draw-text/width dc pel)]
+
+    ;位图：
+    [(bitmap/bp? pel)
+     (draw-bitmap/bp dc pel)]
+    ))
