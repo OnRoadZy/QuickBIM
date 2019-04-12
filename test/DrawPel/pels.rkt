@@ -29,13 +29,14 @@
 
  (struct-out lines/pts)
  (struct-out line/ploy)
- (struct-out spline)
- (struct-out bezier)
-
+ 
  (struct-out text/style)
  (struct-out text/width)
 
  (struct-out bitmap/bp)
+
+ (struct-out spline/2p)
+ (struct-out bezier)
  
  ;通用图元绘制：
  draw-pel
@@ -63,6 +64,8 @@
  draw-text/width
 
  draw-bitmap/bp
+
+ draw-spline/2p
 
  ;判断函数：
  text/left?
@@ -115,7 +118,7 @@
 ;多段线：
 (struct line/ploy (bp pts))
 ;spline线：
-(struct spline (sp ep cep))
+(struct spline/2p (sp cp ep))
 ;B样条线：
 (struct bezier (sp csp ep cep))
 ;nurbs线：
@@ -128,6 +131,9 @@
 
 ;单点位图：
 (struct bitmap/bp (source bp scale))
+
+;填充：
+(struct fill/pts (pts))
 
 ;绘制单个图元：========================================
 
@@ -286,6 +292,14 @@
       (send dc set-scale scale-x/old scale-y/old))))
 
 ;draw-spline
+;绘制spline线：
+(define (draw-spline/2p dc s2p)
+  (let-values ([(spx spy cepx cepy
+                     epx epy)
+                (spline/2p->draw/spline s2p)])
+    (send dc draw-spline spx spy cepx cepy epx epy)))
+                     
+   
 ;draw-path
 
 ;通用函数：========================================
@@ -497,6 +511,18 @@
             (point-x bp) (point-y bp)
             scale)))
 
+;两点spline结构转换为绘制spline结构：
+(define (spline/2p->draw/spline s2p)
+  (let ([sp (spline/2p-sp s2p)]
+        [cp (spline/2p-cp s2p)]
+        [ep (spline/2p-ep s2p)])
+    (values (point-x sp)
+            (point-y sp)
+            (point-x cp)
+            (point-y cp)
+            (point-x ep)
+            (point-y ep))))
+
 ;判断绘制文字类型：===============================
 #|(define-syntax-rule (just-text style)
   (define (text/`style,? pel)
@@ -660,4 +686,8 @@
     ;位图：
     [(bitmap/bp? pel)
      (draw-bitmap/bp dc pel)]
+
+    ;spline:
+    [(spline/2p? pel)
+     (draw-spline/2p dc pel)]
     ))

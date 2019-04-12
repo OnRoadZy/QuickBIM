@@ -126,11 +126,19 @@
    (point 1500 420)
    200)
 
+;位图：
   (bitmap/bp
    "test.jpg"
    (point 800 200)
    0.5)
+  
+;spline:
+  (spline/2p
+   (point 200 500)
+   (point 300 400)
+   (point 500 600))
   ))
+
 
 ;绘制实例图元：===========================
 ;绘制所有图元：
@@ -214,6 +222,7 @@
        [parent pane/all]
        [alignment (list 'left 'top)]
        [stretchable-height #f]))
+
 ;通用组框定义：
 (define-syntax-rule (toolgroup lb)
   (new group-box-panel%
@@ -302,6 +311,8 @@
   (toolbutton gp/text "固定宽度文字" (draw-one-pel text/width?)))
 (define tb/bitmap-bp
   (toolbutton gp/bitmap "基点位图" (draw-one-pel bitmap/bp?)))
+(define tb/spline-2p
+  (toolbutton gp/line "两点样条" (draw-one-pel spline/2p?)))
 
 ;视图区:
 (define pane/view
@@ -345,6 +356,8 @@
   ;初始化画布:
   (send canvas set-canvas-background
         (make-object color% 0 0 0 1.0))
+  ;启用抗锯齿：
+  (send dc set-smoothing 'aligned)
   ;绘制欢迎文字:
   (send dc set-text-foreground "white")
   (send dc set-scale 1 1)
