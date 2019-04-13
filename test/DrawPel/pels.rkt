@@ -7,6 +7,7 @@
  (struct-out point)
  
  (struct-out line/2p)
+ (struct-out line/len)
  
  (struct-out square)
  (struct-out rectangle/2p)
@@ -35,13 +36,14 @@
 
  (struct-out bitmap/bp)
 
- (struct-out spline/2p)
- (struct-out bezier)
+ (struct-out spline/3p)
+ (struct-out bezier/4p)
  
  ;通用图元绘制：
  draw-pel
  ;图元绘制：
  draw-line/2p
+ draw-line/len
 
  draw-rectangle/2p
  draw-rectangle/len
@@ -65,7 +67,8 @@
 
  draw-bitmap/bp
 
- draw-spline/2p
+ draw-spline/3p
+ draw-bezier/4p
 
  ;判断函数：
  text/left?
@@ -79,6 +82,8 @@
 ;定义图元结构：==============================
 ;两点线：
 (struct line/2p (sp ep))
+;长度线：
+(struct line/len (sp len angle))
 
 ;长方形：
 (struct rectangle/2p (sp ep))
@@ -118,9 +123,9 @@
 ;多段线：
 (struct line/ploy (bp pts))
 ;spline线：
-(struct spline/2p (sp cp ep))
+(struct spline/3p (sp cp ep))
 ;B样条线：
-(struct bezier (sp csp ep cep))
+(struct bezier/4p (sp csp cep ep))
 ;nurbs线：
 
 ;单点文字：
@@ -145,6 +150,12 @@
   (let-values
       ([(x1 y1 x2 y2)
         (line/2p->draw/line l2p)])
+    (send dc draw-line x1 y1 x2 y2)))
+
+;画长度线：
+(define (draw-line/len dc llen)
+  (let-values ([(x1 y1 x2 y2)
+                (line/len->draw/line llen)])
     (send dc draw-line x1 y1 x2 y2)))
 
 ;draw-rectangle
@@ -293,23 +304,44 @@
 
 ;draw-spline
 ;绘制spline线：
-(define (draw-spline/2p dc s2p)
+(define (draw-spline/3p dc s3p)
   (let-values ([(spx spy cepx cepy
                      epx epy)
-                (spline/2p->draw/spline s2p)])
-    (send dc draw-spline spx spy cepx cepy epx epy)))
-                     
+                (spline/3p->draw/spline s3p)])
+    (send dc draw-spline spx spy cepx cepy epx epy)))       
    
 ;draw-path
+;绘制Bezier曲线：
+(define (draw-bezier/4p dc b4p)
+  (let-values ([(sp x1 y1 x2 y2 x3 y3)
+                (bezier/4p->draw/bezier b4p)])
+    (let ([path (new dc-path%)])
+      (send path move-to
+            (point-x sp) (point-y sp))
+      (send path curve-to
+            x1 y1 x2 y2 x3 y3)
+      (send dc draw-path path))))
 
 ;通用函数：========================================
-;两点线结构转化为画线结构：
+;线结构转化为画线结构：
 (define (line/2p->draw/line l2p)
   (values
    (point-x (line/2p-sp l2p))
    (point-y (line/2p-sp l2p))
    (point-x (line/2p-ep l2p))
    (point-y (line/2p-ep l2p))))
+
+(define (line/len->draw/line llen)
+  (let* ([sp (line/len-sp llen)]
+        [len (line/len-len llen)]
+        [angle (line/len-angle llen)]
+        [epx (+ (point-x sp)
+                (* len (cos angle)))]
+        [epy (+ (point-y sp)
+                (* len (sin angle)))]
+        [ep (point epx epy)]
+        [l2p (line/2p sp ep)])
+    (line/2p->draw/line l2p)))
 
 ;矩形结构转化为画矩形结构：
 (define (rectangle/2p->draw/rectangle r2p)
@@ -512,10 +544,10 @@
             scale)))
 
 ;两点spline结构转换为绘制spline结构：
-(define (spline/2p->draw/spline s2p)
-  (let ([sp (spline/2p-sp s2p)]
-        [cp (spline/2p-cp s2p)]
-        [ep (spline/2p-ep s2p)])
+(define (spline/3p->draw/spline s3p)
+  (let ([sp (spline/3p-sp s3p)]
+        [cp (spline/3p-cp s3p)]
+        [ep (spline/3p-ep s3p)])
     (values (point-x sp)
             (point-y sp)
             (point-x cp)
@@ -523,13 +555,18 @@
             (point-x ep)
             (point-y ep))))
 
+;B样条结构转换为绘制B样条结构：
+(define (bezier/4p->draw/bezier b4p)
+  (let ([sp (bezier/4p-sp b4p)]
+        [csp (bezier/4p-csp b4p)]
+        [ep (bezier/4p-ep b4p)]
+        [cep (bezier/4p-cep b4p)])
+    (values sp
+            (point-x csp) (point-y csp)
+            (point-x cep) (point-y cep)
+            (point-x ep) (point-y ep))))
+
 ;判断绘制文字类型：===============================
-#|(define-syntax-rule (just-text style)
-  (define (text/`style,? pel)
-    (if (text/style? pel)
-        (if (eq? '`style, (text/style-style pel))
-            #t #f)
-        #f)))|#
 (define (text/left? pel)
   (if (text/style? pel)
       (if (eq? 'left (text/style-style pel))
@@ -639,6 +676,8 @@
     ;线：
     [(line/2p? pel)
      (draw-line/2p dc pel)]
+    [(line/len? pel)
+     (draw-line/len dc pel)]
     ;框：
     [(square? pel)
      (draw-square dc pel)]
@@ -672,22 +711,21 @@
      (draw-polygon/pts dc pel)]
     [(polygon/n? pel)
      (draw-polygon/n dc pel)]
-
     ;多线段：
     [(lines/pts? pel)
      (draw-lines/pts dc pel)]
-
     ;文字：
     [(text/style? pel)
      (draw-text/style dc pel)]
     [(text/width? pel)
      (draw-text/width dc pel)]
-
     ;位图：
     [(bitmap/bp? pel)
      (draw-bitmap/bp dc pel)]
-
-    ;spline:
-    [(spline/2p? pel)
-     (draw-spline/2p dc pel)]
+    ;spline曲线:
+    [(spline/3p? pel)
+     (draw-spline/3p dc pel)]
+    ;bezier曲线:
+    [(bezier/4p? pel)
+     (draw-bezier/4p dc pel)]
     ))
