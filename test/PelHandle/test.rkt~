@@ -1,0 +1,11 @@
+#lang racket
+
+(require racket/gui)
+
+;定义主界面=================================
+(define main-frame
+  (new frame%
+       [label "绘制图元程序-DrawPels"]
+       [width 800]
+       [height 600]
+       [border 2]))

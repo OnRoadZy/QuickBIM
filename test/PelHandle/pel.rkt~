@@ -1,0 +1,11 @@
+#lang racket
+
+(require racket/draw)
+
+;定义点结构：
+(struct point (x y))
+;spline线：
+(struct spline/3p (sp cp ep))
+;B样条线：
+(struct bezier/4p (sp csp cep ep))
+

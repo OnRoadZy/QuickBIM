@@ -128,14 +128,14 @@
 
   (text/width
    "固定长度 文字"
-   (point 1500 420)
+   (point 150 420)
    200)
 
 ;位图：
   (bitmap/bp
    "test.jpg"
    (point 800 200)
-   0.5)
+   0.9)
   
 ;spline:
   (spline/3p
@@ -218,7 +218,7 @@
        [label "关于(&A)"]
        [callback
         (lambda (item event)
-          (about item event main-frame))]))
+          (about item event))]))
 
 ;定义视图框架分割区域:========================
 ;总容器:
@@ -272,65 +272,65 @@
        [parent p]
        [label
         (make-object bitmap%
-          (string-append "toolbutton/" in)
+          (format "~a~a~a" "toolbutton/" in ".png")
           'png)]
        [callback
         (lambda (b e) cb)]))
 ;定义按钮：
 (define tb/clear
-  (toolbutton gp/manage "清除" "clear.png" (canvas-reset)))
+  (toolbutton gp/manage "清除" "clear" (canvas-reset)))
 (define tb/all
-  (toolbutton gp/manage "全部绘制" "draw-all.png" (draw-pels)))
+  (toolbutton gp/manage "全部绘制" "draw-all" (draw-pels)))
 (define tb/line-2p
-  (toolbutton gp/line "两点线" "draw-line-2p.png" (draw-one-pel line/2p?)))
+  (toolbutton gp/line "两点线" "draw-line-2p" (draw-one-pel line/2p?)))
 (define tb/line-len
-  (toolbutton gp/line "长度线" "draw-line-len.png" (draw-one-pel line/len?)))
+  (toolbutton gp/line "长度线" "draw-line-len" (draw-one-pel line/len?)))
 (define tb/lines-pts
-  (toolbutton gp/line "多线段" "" (draw-one-pel lines/pts?)))
+  (toolbutton gp/line "多线段" "draw-lines-pts" (draw-one-pel lines/pts?)))
 (define tb/square
-  (toolbutton gp/rectangle "正方形" "" (draw-one-pel square?)))
+  (toolbutton gp/rectangle "正方形" "draw-square" (draw-one-pel square?)))
 (define tb/rectangle-2p
-  (toolbutton gp/rectangle "两点矩形" "" (draw-one-pel rectangle/2p?)))
+  (toolbutton gp/rectangle "两点矩形" "draw-rectangle-2p" (draw-one-pel rectangle/2p?)))
 (define tb/rectangle-len
-  (toolbutton gp/rectangle "长度矩形" "" (draw-one-pel rectangle/len?)))
+  (toolbutton gp/rectangle "长度矩形" "draw-rectangle-len" (draw-one-pel rectangle/len?)))
 (define tb/circle-r
-  (toolbutton gp/circle "半径圆" "" (draw-one-pel circle/r?)))
+  (toolbutton gp/circle "半径圆" "draw-circle-r" (draw-one-pel circle/r?)))
 (define tb/circle-1p
-  (toolbutton gp/circle "中心圆" "" (draw-one-pel circle/1p?)))
+  (toolbutton gp/circle "中心圆" "draw-circle-1p" (draw-one-pel circle/1p?)))
 (define tb/circle-2p
-  (toolbutton gp/circle "两点圆" "" (draw-one-pel circle/2p?)))
+  (toolbutton gp/circle "两点圆" "draw-circle-2p" (draw-one-pel circle/2p?)))
 (define tb/circle-3p
-  (toolbutton gp/circle "三点圆" "" (draw-one-pel circle/3p?)))
+  (toolbutton gp/circle "三点圆" "draw-circle-3p" (draw-one-pel circle/3p?)))
 (define tb/ellipse-cp
-  (toolbutton gp/circle "圆心椭圆" "" (draw-one-pel ellipse/cp?)))
+  (toolbutton gp/circle "圆心椭圆" "draw-ellipse-cp" (draw-one-pel ellipse/cp?)))
 (define tb/ellipse-2p
-  (toolbutton gp/circle "两点椭圆" "" (draw-one-pel ellipse/2p?)))
+  (toolbutton gp/circle "两点椭圆" "draw-ellipse-2p" (draw-one-pel ellipse/2p?)))
 (define tb/arc-a
-  (toolbutton gp/arc "角圆弧" "" (draw-one-pel arc/a?)))
+  (toolbutton gp/arc "角圆弧" "draw-arc-a" (draw-one-pel arc/a?)))
 (define tb/arc-2p
-  (toolbutton gp/arc "两点圆弧" "" (draw-one-pel arc/2p?)))
+  (toolbutton gp/arc "两点圆弧" "draw-arc-2p" (draw-one-pel arc/2p?)))
 (define tb/arc-3p
-  (toolbutton gp/arc "三点圆弧" "" (draw-one-pel arc/3p?)))
+  (toolbutton gp/arc "三点圆弧" "draw-arc-3p" (draw-one-pel arc/3p?)))
 (define tb/polygon-pts
-  (toolbutton gp/polygon "多点多边形" "" (draw-one-pel polygon/pts?)))
+  (toolbutton gp/polygon "多点多边形" "draw-polygon-pts" (draw-one-pel polygon/pts?)))
 (define tb/polygon-n
-  (toolbutton gp/polygon "边数正多边形" "" (draw-one-pel polygon/n?)))
+  (toolbutton gp/polygon "边数正多边形" "draw-polygon-n" (draw-one-pel polygon/n?)))
 (define tb/text-left
-  (toolbutton gp/text "左对齐文字" "" (draw-one-pel text/left?)))
+  (toolbutton gp/text "左对齐文字" "draw-text-left" (draw-one-pel text/left?)))
 (define tb/text-right
-  (toolbutton gp/text "右对齐文字" "" (draw-one-pel text/right?)))
+  (toolbutton gp/text "右对齐文字" "draw-text-right" (draw-one-pel text/right?)))
 (define tb/text-middle
-  (toolbutton gp/text "中间对齐文字" "" (draw-one-pel text/middle?)))
+  (toolbutton gp/text "中间对齐文字" "draw-text-middle" (draw-one-pel text/middle?)))
 (define tb/text-center
-  (toolbutton gp/text "中心对齐文字" "" (draw-one-pel text/center?)))
+  (toolbutton gp/text "中心对齐文字" "draw-text-center" (draw-one-pel text/center?)))
 (define tb/text-width
-  (toolbutton gp/text "固定宽度文字" "" (draw-one-pel text/width?)))
+  (toolbutton gp/text "固定宽度文字" "draw-text-width" (draw-one-pel text/width?)))
 (define tb/bitmap-bp
-  (toolbutton gp/bitmap "基点位图" "" (draw-one-pel bitmap/bp?)))
+  (toolbutton gp/bitmap "基点位图" "draw-bitmap-bp" (draw-one-pel bitmap/bp?)))
 (define tb/spline-3p
-  (toolbutton gp/line "三点样条" "" (draw-one-pel spline/3p?)))
+  (toolbutton gp/line "三点样条" "draw-spline-3p" (draw-one-pel spline/3p?)))
 (define tb/bezier-4p
-  (toolbutton gp/line "4点Bezier曲线" "" (draw-one-pel bezier/4p?)))
+  (toolbutton gp/line "4点Bezier曲线" "draw-bezier-4p" (draw-one-pel bezier/4p?)))
 
 ;视图区:
 (define pane/view
