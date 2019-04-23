@@ -5,12 +5,22 @@
 (provide
  ;图元结构：
  (struct-out point)
+
+ pels
  
  handler%
  spline%
  bezier%)
 
- 
+;图元管理：=====================================
+(define pels empty)
+
+;会话提示结构:
+(struct interactive-prompt
+  (style ;需要取得的值类型。包括:点'point,选项'select,数值'number
+   prompt)) ;提示内容
+
+;图元定义：=====================================
 ;定义点结构：
 (struct point (x y))
 
@@ -45,6 +55,19 @@
     (init-field sp
                 cp
                 ep)
+
+    (field [create-prompt
+            (vector
+             (interactive-prompt
+              'point
+              "请输入起点")
+             (interactive-prompt
+              'point
+              "请输入控制点")
+             (interactive-prompt
+              'point
+              "请输入结束点"))]
+           [end-prompt "绘制Spline线结束。"])
 
     (define/public (draw dc)
       (send dc draw-spline

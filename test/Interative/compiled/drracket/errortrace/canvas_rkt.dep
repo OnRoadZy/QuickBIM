@@ -1,0 +1,1 @@
+("6.12" ("c94535dc59c21be83c6d82e8d4fda7dae5984753" . "756c6c6aa0a18c6e045714768241a1efe9cb4ed5") (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"gui.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))

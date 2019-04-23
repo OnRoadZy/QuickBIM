@@ -4,19 +4,44 @@
 
 (require "pel.rkt")
 
-;测试数据：================================
-
-
 ;绘图：===================================
+;确定是否绘制控制点：
+(define (handler?)
+  (send check-box-handler get-value))
+
 ;测试画单个控制点：
 (define (draw-handler cp)
   (let ([hd
          (new handler% [cp cp])]
         [dc (send canvas get-dc)])
-    (send hd draw-handler dc)))
+    (send hd draw dc)))
 
 (define (test-handler)
   (draw-handler (point 100 100)))
+
+;测试画Spline线：
+(define (test-spline)
+  (let ([spline (new spline%
+             [sp (point 50 50)]
+             [cp (point 100 300)]
+             [ep (point 300 10)])]
+        [dc (send canvas get-dc)])
+    (send spline draw dc)
+    (when (handler?)
+      (send spline draw-handler dc))))
+
+;测试画Bezier线：
+(define (test-bezier)
+  (let ([bezier
+         (new bezier%
+              [sp (point 50 100)]
+              [csp (point 100 400)]
+              [cep (point 300 10)]
+              [ep (point 400 300)])]
+        [dc (send canvas get-dc)])
+    (send bezier draw dc)
+    (when (handler?)
+      (send bezier draw-handler dc))))
 
 ;清除绘图内容：
 (define (canvas-reset)
@@ -77,6 +102,13 @@
        [alignment (list 'left 'top)]
        [stretchable-height #f]))
 
+;定义选择框：
+(define check-box-handler
+  (new check-box%
+       (parent pane/toolbar)
+       (label "绘制控制点")
+       (value #t)))
+
 ;工具按钮通用宏：
 (define-syntax-rule (toolbutton p lb cb)
   (new button%
@@ -89,6 +121,10 @@
   (toolbutton pane/toolbar "清除" (canvas-reset)))
 (define tb/handler
   (toolbutton pane/toolbar "测试控制点" (test-handler)))
+(define tb/spline
+  (toolbutton pane/toolbar "测试Spline线" (test-spline)))
+(define tb/bezier
+  (toolbutton pane/toolbar "测试Bezier线" (test-bezier)))
 
 ;视图区:
 (define pane/view
