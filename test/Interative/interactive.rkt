@@ -11,7 +11,8 @@
                 interactive-line
                 interactive-info)
 
-    (field style ;会话类型。包括:两点线2p-line,多段线poly-line,半径圆‘circle-radius,圆弧arc
+    (field [style void] ;会话类型。包括:两点线2p-line,多段线poly-line,半径圆‘circle-radius,圆弧arc
+           [interactive-object void] ;当前交互对象。
            [prompt-int 0]) ;当前会话向量序号。
 
     (define/public (mouse-event event) ;mouse-event%
@@ -103,7 +104,7 @@
             (when (command-str? str)
               (interactive/command str)) ;进入命令相应交互
             ;在交互状态下:
-            (let ([style ;取得会话提示需求值类型
+            (let ([interactive-object ;取得交互对象
                    (get-prompt-style
                     (get-current-int))])
               ;为坐标:
@@ -130,7 +131,8 @@
 
     ;重置会话环境:
     (define/private (reset-interactive-context)
-      (set! interactive-context void))
+      (set! style void)
+      (set! prompt-int 0))
 
     ;取得交互回答字符串:
     (define/private (get-answer-from-interactive-line)
@@ -156,7 +158,8 @@
 
     ;检查会话环境重置状态:
     (define (interactive-context-reset?)
-      (equal? interactive-context void))
+      (and (equal? style void)
+           (= prompt-int 0)))
 
     ;为命令字串?
     (define (command-str? str)
@@ -177,12 +180,7 @@
 
     ;取得会话提示类型:
     (define (get-prompt-style current-int)
-      (interactive-prompt-style
-       (get-prompt-vector current-int)))
-
-    ;取得当前会话序号:
-    (define (get-current-int)
-      (interactive-current-int interactive-context))
+      (send interactive-object get-prompt-style prompt-int))
 
     ;保存点值:
     (define (save-point str)
@@ -213,11 +211,13 @@
                           (hash-ref draw-style-hash str)))
           #f))
 
+#|
     ;设置绘图结构类型:
     (define (init-cur-draw)
       (set! cur-draw
             (draw (get-style) null)))
-
+|#
+    
     ;显示交互提示:
     (define (show-prompt)
       (send interactive-line set-label

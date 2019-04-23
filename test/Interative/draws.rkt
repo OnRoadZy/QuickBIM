@@ -84,6 +84,16 @@
         (send hep draw dc)
         (draw-handler-line dc sp cp)
         (draw-handler-line dc cp ep)))
+
+    ;提示数量：
+    (define/public (prompt-count)
+      (vector-length create-prompt))
+
+    ;取得提示内容：
+    (define/public (get-prompt-style n)
+      (interactive-prompt-style
+       (vector-ref create-prompt n)))
+    
     ))
 
 ;B样条线类：
