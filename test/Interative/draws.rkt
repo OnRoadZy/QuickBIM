@@ -16,9 +16,10 @@
 (define pels empty)
 
 ;会话提示结构:
+;由两部分组成：需求值类型，提示。
 (struct interactive-prompt
-  (style ;需要取得的值类型。包括:点'point,选项'select,数值'number
-   prompt)) ;提示内容
+  (style ;需求值类型。包括:点'point,选项'select,数值'number
+   prompt)) ;提示
 
 ;图元定义：=====================================
 ;定义点结构：

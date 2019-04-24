@@ -11,9 +11,19 @@
                 interactive-line
                 interactive-info)
 
-    (field [style void] ;会话类型。包括:两点线2p-line,多段线poly-line,半径圆‘circle-radius,圆弧arc
-           [interactive-object void] ;当前交互对象。
-           [prompt-int 0]) ;当前会话向量序号。
+    ;交互环境字段：
+    (field [interactive/style void] ;会话类型。包括:两点线2p-line,多段线poly-line,半径圆‘circle-radius,圆弧arc
+           [interactive/object void] ;当前交互对象。
+           [interactive/vector void] ;当前会话向量。
+           [interactive/n 0]) ;当前会话向量序号。
+
+    ;定义交互栈,每当产生选项时,当前交互环境状态入栈。
+    ;入栈的环境字段：vector、n。
+    ;当结束命令时清空栈；当结束选项对话时回退之前交互内容。
+    (define stack empty)
+    (define line-prompt "") ;交互行提示内容
+    (define line-val "") ;交互行值
+    (define interactive-history empty) ;交互历史记录
 
     (define/public (mouse-event event) ;mouse-event%
       (let ([type (send event get-event-type)])
@@ -99,17 +109,12 @@
     ;确认会话:
     (define/private (enter-interactive)
       (let ([str (get-answer-from-interactive-line)])
-        (if (interactive-context-reset?) ;已重置交互环境
-            ;为命令
-            (when (command-str? str)
-              (interactive/command str)) ;进入命令相应交互
-            ;在交互状态下:
-            (let ([interactive-object ;取得交互对象
-                   (get-prompt-style
-                    (get-current-int))])
-              ;为坐标:
-              (cond
-                [(equal? style 'point)
+        (if (command? str) ;为命令
+            (set-interactive-context str) ;设置交互环境
+            (
+              [(value? str) ;为值
+               void]
+              [(equal? style 'point) ;为坐标
                  (begin
                    (save-point str)
                    (next-interactive))])))))
@@ -167,6 +172,7 @@
        (car (regexp-match #px"[0-9a-z]*" str))
        str))
 
+    #|
     ;进行绘图交互:
     (define (interactive/command str)
       ;设置交互环境:
@@ -211,18 +217,16 @@
                           (hash-ref draw-style-hash str)))
           #f))
 
-#|
     ;设置绘图结构类型:
     (define (init-cur-draw)
       (set! cur-draw
             (draw (get-style) null)))
-|#
-    
+
     ;显示交互提示:
     (define (show-prompt)
       (send interactive-line set-label
             (get-prompt (get-current-int))))
-    
+    |#
     ))
     
     
