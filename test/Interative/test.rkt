@@ -107,7 +107,6 @@
        [parent pane/interactive]
        [label #f]
        [style (list 'multiple)]
-       [init-value "命令交互准备就绪！"]
        [min-height 80]
        [stretchable-height #f]))
 
@@ -172,3 +171,4 @@
 ;显示程序主框架：===================================
 (send main-frame show #t)
 (send canvas focus)
+(send ic begin-interactive-context)

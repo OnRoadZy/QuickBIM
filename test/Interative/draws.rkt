@@ -5,6 +5,7 @@
 (provide
  ;图元结构：
  (struct-out point)
+ (struct-out interactive-prompt)
 
  pels
  
@@ -53,47 +54,68 @@
   (class object%
     (super-new)
 
-    (init-field sp
-                cp
-                ep)
+    (init-field [sp (point 0 0)]
+                [cp (point 0 0)]
+                [ep (point 0 0)])
 
-    (field [create-prompt
+    (field [values (vector sp cp ep)]
+           [style "spline"]
+           [create-prompt
             (vector
              (interactive-prompt
               'point
-              "请输入起点")
+              "请输入起点：")
              (interactive-prompt
               'point
-              "请输入控制点")
+              "请输入控制点：")
              (interactive-prompt
               'point
-              "请输入结束点"))]
+              "请输入结束点："))]
            [end-prompt "绘制Spline线结束。"])
 
     (define/public (draw dc)
-      (send dc draw-spline
-            (point-x sp) (point-y sp)
-            (point-x cp) (point-y cp)
-            (point-x ep) (point-y ep)))
+      (let ([sp (vector-ref values 0)]
+            [cp (vector-ref values 1)]
+            [ep (vector-ref values 2)])
+        (send dc draw-spline
+              (point-x sp) (point-y sp)
+              (point-x cp) (point-y cp)
+              (point-x ep) (point-y ep))))
 
     (define/public (draw-handler dc)
-      (let ([hsp (new handler% [cp sp])]
-            [hcp (new handler% [cp cp])]
-            [hep (new handler% [cp ep])])
+      (let* ([sp (vector-ref values 0)]
+             [cp (vector-ref values 1)]
+             [ep (vector-ref values 2)]
+             [hsp (new handler% [cp sp])]
+             [hcp (new handler% [cp cp])]
+             [hep (new handler% [cp ep])])
         (send hsp draw dc)
         (send hcp draw dc)
         (send hep draw dc)
         (draw-handler-line dc sp cp)
         (draw-handler-line dc cp ep)))
-
+    
     ;提示数量：
     (define/public (prompt-count)
       (vector-length create-prompt))
 
     ;取得提示内容：
-    (define/public (get-prompt-style n)
+    (define/public (get-prompt n)
+      (interactive-prompt-prompt
+       (vector-ref create-prompt n)))
+
+    ;取得需求值类型：
+    (define/public (get-value-style n)
       (interactive-prompt-style
        (vector-ref create-prompt n)))
+
+    ;取得会话结束提示：
+    (define/public (get-end-prompt)
+      end-prompt)
+
+    ;设置绘图值：
+    (define/public (set-value n v)
+      (vector-set! values n v))
     
     ))
 

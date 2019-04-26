@@ -15,11 +15,11 @@
     
     ;重定义鼠标事件：----------------------------------
     (define/override (on-event event) ;mouse-event%
-      (send interactive mouse-event event))
+      (send ic mouse-event event))
 
     ;重定义键盘事件：---------------------------------
     (define/override (on-char event) ;key-event%
-      (send interactive key-event event))
+      (send ic key-event event))
 
     ))
 
