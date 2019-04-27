@@ -15,7 +15,20 @@
     
     ;重定义鼠标事件：----------------------------------
     (define/override (on-event event) ;mouse-event%
-      (send ic mouse-event event))
+      (let ([type (send event get-event-type)])
+        (cond
+          ;点击左键:
+          [(equal? type 'left-down)
+           (send ic click-left-button event)]
+          ;点击右键:
+          [(equal? type 'right-down)
+           (send ic click-right-button event)]
+          ;处理鼠标移动事件:
+          [(equal? type 'motion)
+           (send ic
+                 mouse-moving
+                 event
+                 (send this get-dc))])))
 
     ;重定义键盘事件：---------------------------------
     (define/override (on-char event) ;key-event%

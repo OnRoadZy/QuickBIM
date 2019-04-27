@@ -26,7 +26,10 @@
                 interactive-info)
 
     ;交互环境字段：
-    (field [interactive/object void] ;当前交互对象
+    (field [objects '()]
+           [interactive/old-pt void]
+           [interactive/dc void]
+           [interactive/object void] ;当前交互对象。
            [interactive/n 0]) ;当前会话向量序号。
 
     ;定义交互栈,每当产生选项时,当前交互环境状态入栈。
@@ -36,18 +39,6 @@
     (define line-prompt "命令：") ;交互行提示内容
     (define line-val "") ;交互行值
     (define interactive-history "命令交互准备就绪!") ;交互历史记录
-
-    (define/public (mouse-event event) ;mouse-event%
-      (let ([type (send event get-event-type)])
-        (cond
-          ;点击左键:
-          [(equal? type 'left-down)
-           (click-left-button event)]
-          ;点击右键:
-          [(equal? type 'right-down)
-           (click-right-button event)]
-          ;把鼠标位置显示在状态栏:
-          [else (show-mouse-pos event)])))
 
     (define/public (key-event event) ;key-event%
       (let ([key (send event get-key-code)])
@@ -68,7 +59,7 @@
 
     ;处理鼠标事件函数:---------------------------
     ;处理鼠标左键事件:
-    (define (click-left-button event)
+    (define/public (click-left-button event)
       (cond
       ;处理鼠标事件获取坐标值：
       [(and
@@ -80,12 +71,25 @@
        (set-mouse-point event)]))
 
     ;处理鼠标右键事件:
-    (define (click-right-button event)
+    (define/public (click-right-button event)
       void)
+
+    ;处理鼠标移动事件：
+    (define/public (mouse-moving event dc)
+      ;显示鼠标位置：
+      (show-mouse-pos event)
+      ;绘制动态图：
+      (unless (equal? interactive/object void)
+        (send interactive/object
+              immediatly-draw
+              interactive/dc
+              interactive/old-pt
+              (point (send event get-x)
+                     (send event get-y)))))
 
     ;处理鼠标其它事件:
     ;在状态栏坐标区显示鼠标位置:
-    (define (show-mouse-pos event)
+    (define/public (show-mouse-pos event)
       (send msg-mouse-pos set-label
             (get-pos-from-event event)))
 
@@ -110,10 +114,8 @@
     
     ;放弃会话:
     (define (escape-interactive)
-      ;显示会话错误信息:
-      (show-interactive-msg "*取消*")
-      ;重置交互行:
-      (reset-interactive-line)
+      ;显示会话提示信息:
+      (show-interactive-msg "取消")
       ;重置交互环境:
       (reset-interactive-context))
 
@@ -135,9 +137,10 @@
           (let ([command (command? line-val)])
             (if command ;为命令
                 (start-new-interactive command)
-                (begin
-                  (show-interactive-msg "不是正确的命令。")
-                  (reset-interactive-line))))
+                (unless (equal? line-val "")
+                  (begin
+                    (show-interactive-msg "不是正确的命令")
+                    (reset-interactive-line)))))
           ;处于交互状态：
           (let ([value-style
                  (send interactive/object
@@ -145,24 +148,56 @@
             (cond
               ;需要点：
               [(equal? value-style 'point)
-               (check-value-style is-point? "需要提供点坐标。")]
+               (check-value-style is-point?
+                                  string->point
+                                  "需要提供点坐标")]
               ;需要值:
               [(equal? value-style 'value)
-               (check-value-style is-value? "需要提供一个数值。")]
+               (check-value-style is-value?
+                                  string->value
+                                  "需要提供一个数值")]
               ;需要选项：
               [(equal? value-style 'select)
-               (check-value-style is-select? "需要提供选项。")]))))
+               (check-value-style is-select?
+                                  string->select
+                                  "需要提供选项")]))))
 
     ;需求值验证宏：
-    (define-syntax-rule (check-value-style style? msg)
+    (define-syntax-rule (check-value-style style? convert msg)
       (if (style? line-val)
           (begin
             (send interactive/object
-                  set-value interactive/n line-val)
-            (save-interactive-line))
+                  set-value (convert line-val))
+            (when (is-point? line-val)
+                  (set! interactive/old-pt (convert line-val)))
+            (save-interactive-line)
+            (interactive-n-prompt
+             (+ interactive/n 1)))
           (begin
             (show-interactive-msg msg)
             (set-n-prompt interactive/n))))
+
+    ;字符串转换为点坐标值：
+    (define (string->point str)
+      (if (is-point? str)
+          (let* ([ls-str (regexp-split #rx"[<,]" str)]
+                 [first-str (list-ref ls-str 0)]
+                 [second-str (list-ref ls-str 1)])
+            (point (string->number first-str)
+                   (string->number second-str)))
+          #f))
+             
+    ;字符串转换为点坐标值:
+    (define (string->value str)
+      (if (is-value? str)
+          (string->number str)
+          #f))
+
+    ;字符串转换为选项值：
+    (define (string->select str)
+      (if (is-select? str)
+          str
+          #f))
 
     ;通用方法：--------------------------------------------
     ;检查键盘字符是否为会话字符(在会话行允许输入):
@@ -188,12 +223,21 @@
               #f)))
 
     ;为坐标点？
+    ;坐标格式有两种:(number,number),(number<degree)
     (define (is-point? val)
-      #f)
+      (if (or
+           (regexp-match #rx"," val)
+           (regexp-match #rx"<" val))
+          (let* ([ls-str (regexp-split #rx"[<,]" val)]
+                 [first-str (list-ref ls-str 0)]
+                 [second-str (list-ref ls-str 1)])
+            (and (string->number first-str)
+                 (string->number second-str)))
+          #f))
 
     ;为数值？
     (define (is-value? val)
-      #f)
+      (string->number val))
 
     ;为选项？
     (define (is-select? val)
@@ -207,7 +251,13 @@
     ;重置会话环境:
     (define (reset-interactive-context)
       (set! interactive/object void)
-      (set! interactive/n 0))
+      (set! interactive/n 0)
+      (set! line-val "")
+      (reset-interactive-line))
+
+    ;检查会话环境重置状态:
+    (define (interactive-context-reset?)
+      (equal? interactive/object void))
 
     ;开始一个新的会话：
     (define (start-new-interactive command)
@@ -248,31 +298,39 @@
     
     ;结束会话：
     (define (end-interactive)
-      (show-interactive-msg
-       (send interactive/object get-end-prompt)))
+      (append-interactive-history
+       (send interactive/object get-end-prompt))
+      ;保存交互对象：
+      (cons interactive/object objects)
+      (reset-interactive-context))
        
     ;创建交互对象：
     (define (create-interactive-object command)
       (cond
-        [(eq? command "spline")
+        [(equal? command "spline")
          (new spline%)]))
 
     ;显示会话提醒信息:
     (define (show-interactive-msg msg)
-      (set! line-val
-            (string-append line-val
-                           msg))
-      (send interactive-line set-label
-            (string-append line-prompt line-val))
-      (save-interactive-line))
+      ;保存会话行内容：
+      (save-interactive-line)
+      ;显示指定信息：
+      (append-interactive-history
+       (string-append "*" msg "*")))
 
     ;保存交互行内容到交互历史信息：
     (define (save-interactive-line)
+      (append-interactive-history
+       (string-append line-prompt
+                      line-val)))
+
+    ;保存字符串到交互历史信息:
+    (define (append-interactive-history str)
       (set! interactive-history
             (string-append
              interactive-history
              "\n"
-             (send interactive-line get-label)))
+             str))
       (send interactive-info
             set-value interactive-history))
 
@@ -287,70 +345,20 @@
       (send interactive-line set-label
             (string-append line-prompt line-val)))
 
-    ;检查会话环境重置状态:
-    (define (interactive-context-reset?)
-      (equal? interactive/object void))
+    ;设置交互DC：
+    (define/public (set-dc dc)
+      (set! interactive/dc dc))
 
-    ;为命令字串?
-    (define (command-str? str)
-      (string=?
-       (car (regexp-match #px"[0-9a-z]*" str))
-       str))
+    ;取得交互DC：
+    (define/public (get-dc)
+      interactive/dc)
     
-    #|
-    ;进行绘图交互:
-    (define (interactive/command str)
-      ;设置交互环境:
-      (when (set-interactive-context str)
-        ;设置当前绘图类型:
-        (init-cur-draw)
-        ;保存命令:
-        (save-interactive-line)
-        ;显示交互提示:
-        (show-prompt)))
+    ;绘制全部交互对象：
+    (define/public (draw-objects dc)
+      (for-each
+       (lambda (object)
+         (send object draw dc))
+       objects))
 
-    ;取得会话提示类型:
-    (define (get-prompt-style current-int)
-      (send interactive-object get-prompt-style prompt-int))
-
-    ;保存点值:
-    (define (save-point str)
-      (when (value/point? str)
-        (set-draw-ls! cur-draw
-                      (cons
-                       (draw-value
-                        'point
-                        (analyze-answer str))
-                       (draw-ls cur-draw)))))
-
-    ;进行下一段交互:
-    (define (next-interactive)
-      (save-interactive-line)
-      (add-current-int)
-      (if
-       ;当前会话不是最后一个会话:
-       (< (get-current-int)
-          (get-prompt-number))
-       (show-prompt)
-       (end-interactive)))
-
-    ;设置交互环境:
-    (define (set-interactive-context str)
-      (if (command/draw? str)
-          (set! interactive-context
-                (hash-ref interactive-hash
-                          (hash-ref draw-style-hash str)))
-          #f))
-
-    ;设置绘图结构类型:
-    (define (init-cur-draw)
-      (set! cur-draw
-            (draw (get-style) null)))
-
-    ;显示交互提示:
-    (define (show-prompt)
-      (send interactive-line set-label
-            (get-prompt (get-current-int))))
-    |#
     ))
     

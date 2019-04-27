@@ -3,7 +3,8 @@
 (require racket/gui)
 
 (require "canvas.rkt"
-         "interactive.rkt")
+         "interactive.rkt"
+         "draws.rkt")
 
 ;定义主界面=======================
 (define main-frame
@@ -131,6 +132,7 @@
        [auto-resize #t]))
 
 ;定义会话对象：===============================
+
 (define ic
   (new interactive-context%
        [msg-mouse-pos status/mouse-position]
@@ -166,9 +168,13 @@
   ;绘制欢迎文字：
   (send dc set-text-foreground "white")
   (send dc set-scale 1 1)
-  (send dc draw-text "画布（Canvas）准备就绪!" 0 0))
+  (send dc draw-text "画布（Canvas）准备就绪!" 0 0)
+  ;绘制图形对象：
+  (send dc set-pen "red" 1 'solid)
+  (send ic draw-objects dc))
 
 ;显示程序主框架：===================================
+(send ic set-dc (send canvas get-dc))
+(send ic begin-interactive-context)
 (send main-frame show #t)
 (send canvas focus)
-(send ic begin-interactive-context)

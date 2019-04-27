@@ -54,11 +54,7 @@
   (class object%
     (super-new)
 
-    (init-field [sp (point 0 0)]
-                [cp (point 0 0)]
-                [ep (point 0 0)])
-
-    (field [values (vector sp cp ep)]
+    (field [values '()]
            [style "spline"]
            [create-prompt
             (vector
@@ -73,19 +69,28 @@
               "请输入结束点："))]
            [end-prompt "绘制Spline线结束。"])
 
+    ;为字段填充值使之具体：
+    (define/public (make-object sp cp ep)
+      (set! values
+            (cons sp
+                  (cons cp
+                        (cons ep values))))
+      this)
+    ;绘制：
     (define/public (draw dc)
-      (let ([sp (vector-ref values 0)]
-            [cp (vector-ref values 1)]
-            [ep (vector-ref values 2)])
+      (let ([sp (list-ref values 0)]
+            [cp (list-ref values 1)]
+            [ep (list-ref values 2)])
         (send dc draw-spline
               (point-x sp) (point-y sp)
               (point-x cp) (point-y cp)
               (point-x ep) (point-y ep))))
 
+    ;绘制控制点：
     (define/public (draw-handler dc)
-      (let* ([sp (vector-ref values 0)]
-             [cp (vector-ref values 1)]
-             [ep (vector-ref values 2)]
+      (let* ([sp (list-ref values 0)]
+             [cp (list-ref values 1)]
+             [ep (list-ref values 2)]
              [hsp (new handler% [cp sp])]
              [hcp (new handler% [cp cp])]
              [hep (new handler% [cp ep])])
@@ -94,6 +99,31 @@
         (send hep draw dc)
         (draw-handler-line dc sp cp)
         (draw-handler-line dc cp ep)))
+
+    ;绘制交互即时图：
+    (define/public (immediatly-draw dc old-pt cur-pt)
+      ;根据v向量值的个数绘制图形：
+      (send dc set-pen "red" 1 'xor)
+      (cond
+        [(= (length values) 1)
+         (let ([sp (list-ref values 0)])
+           (send dc draw-line
+                 (point-x sp) (point-y sp)
+                 (point-x old-pt) (point-y old-pt))
+           (send dc draw-line
+                 (point-x sp) (point-y sp)
+                 (point-x cur-pt) (point-y cur-pt)))]
+        [(= (length values) 2)
+         (let ([sp (list-ref values 0)]
+               [cp (list-ref values 1)])
+           (send dc draw-spline
+                 (point-x sp) (point-y sp)
+                 (point-x cp) (point-y cp)
+                 (point-x old-pt) (point-y old-pt))
+           (send dc draw-spline
+                 (point-x sp) (point-y sp)
+                 (point-x cp) (point-y cp)
+                 (point-x cur-pt) (point-y cur-pt)))]))
     
     ;提示数量：
     (define/public (prompt-count)
@@ -114,9 +144,8 @@
       end-prompt)
 
     ;设置绘图值：
-    (define/public (set-value n v)
-      (vector-set! values n v))
-    
+    (define/public (set-value v)
+      (set! values (cons v values)))
     ))
 
 ;B样条线类：
