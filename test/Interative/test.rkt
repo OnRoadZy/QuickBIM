@@ -170,6 +170,7 @@
   (send dc set-scale 1 1)
   (send dc draw-text "画布（Canvas）准备就绪!" 0 0)
   ;绘制图形对象：
+  (send dc set-background "black")
   (send dc set-pen "red" 1 'solid)
   (send ic draw-objects dc))
 

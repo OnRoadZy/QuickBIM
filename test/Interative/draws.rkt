@@ -54,8 +54,8 @@
   (class object%
     (super-new)
 
-    (field [values '()]
-           [style "spline"]
+    (field [vals '()]
+           [style 'spline]
            [create-prompt
             (vector
              (interactive-prompt
@@ -71,16 +71,15 @@
 
     ;为字段填充值使之具体：
     (define/public (make-object sp cp ep)
-      (set! values
+      (set! vals
             (cons sp
                   (cons cp
                         (cons ep values))))
       this)
+    
     ;绘制：
     (define/public (draw dc)
-      (let ([sp (list-ref values 0)]
-            [cp (list-ref values 1)]
-            [ep (list-ref values 2)])
+      (let-values ([(sp cp ep) (get-values)])
         (send dc draw-spline
               (point-x sp) (point-y sp)
               (point-x cp) (point-y cp)
@@ -88,38 +87,42 @@
 
     ;绘制控制点：
     (define/public (draw-handler dc)
-      (let* ([sp (list-ref values 0)]
-             [cp (list-ref values 1)]
-             [ep (list-ref values 2)]
-             [hsp (new handler% [cp sp])]
-             [hcp (new handler% [cp cp])]
-             [hep (new handler% [cp ep])])
-        (send hsp draw dc)
-        (send hcp draw dc)
-        (send hep draw dc)
-        (draw-handler-line dc sp cp)
-        (draw-handler-line dc cp ep)))
+      (let-values ([(sp cp ep) (get-values)])
+        (let ([hsp (new handler% [cp sp])]
+              [hcp (new handler% [cp cp])]
+              [hep (new handler% [cp ep])])
+          (send hsp draw dc)
+          (send hcp draw dc)
+          (send hep draw dc)
+          (draw-handler-line dc sp cp)
+          (draw-handler-line dc cp ep))))
 
     ;绘制交互即时图：
     (define/public (immediatly-draw dc old-pt cur-pt)
       ;根据v向量值的个数绘制图形：
-      (send dc set-pen "red" 1 'xor)
+      ;(send dc set-pen "red" 1 'xor)
       (cond
-        [(= (length values) 1)
-         (let ([sp (list-ref values 0)])
+        [(= (length vals) 1)
+         (let ([sp (list-ref vals 0)])
+           (send dc set-pen (send dc get-background) 1 'xor)
            (send dc draw-line
                  (point-x sp) (point-y sp)
                  (point-x old-pt) (point-y old-pt))
+
+           (send dc set-pen "red" 1 'xor)
            (send dc draw-line
                  (point-x sp) (point-y sp)
                  (point-x cur-pt) (point-y cur-pt)))]
-        [(= (length values) 2)
-         (let ([sp (list-ref values 0)]
-               [cp (list-ref values 1)])
+        [(= (length vals) 2)
+         (let ([cp (list-ref vals 0)]
+               [sp (list-ref vals 1)])
+           (send dc set-pen (send dc get-background) 1 'xor)
            (send dc draw-spline
                  (point-x sp) (point-y sp)
                  (point-x cp) (point-y cp)
                  (point-x old-pt) (point-y old-pt))
+
+           (send dc set-pen "red" 1 'xor)
            (send dc draw-spline
                  (point-x sp) (point-y sp)
                  (point-x cp) (point-y cp)
@@ -143,9 +146,19 @@
     (define/public (get-end-prompt)
       end-prompt)
 
+    ;取得图形类型：
+    (define/public (get-style)
+      style)
+      
     ;设置绘图值：
     (define/public (set-value v)
-      (set! values (cons v values)))
+      (set! vals (cons v vals)))
+
+    ;取得绘图值：
+    (define (get-values)
+      (values (list-ref vals 2)
+              (list-ref vals 1)
+              (list-ref vals 0)))
     ))
 
 ;B样条线类：

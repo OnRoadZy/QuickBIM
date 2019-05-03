@@ -80,10 +80,15 @@
       (show-mouse-pos event)
       ;绘制动态图：
       (unless (equal? interactive/object void)
+        ;绘制即时图形：
         (send interactive/object
               immediatly-draw
               interactive/dc
               interactive/old-pt
+              (point (send event get-x)
+                     (send event get-y)))
+        ;保存当前鼠标位置：
+        (set! interactive/old-pt
               (point (send event get-x)
                      (send event get-y)))))
 
@@ -145,7 +150,7 @@
           (let ([value-style
                  (send interactive/object
                        get-value-style interactive/n)])
-            (cond
+            (cond ;各分支采用宏简化代码。
               ;需要点：
               [(equal? value-style 'point)
                (check-value-style is-point?
@@ -165,14 +170,16 @@
     ;需求值验证宏：
     (define-syntax-rule (check-value-style style? convert msg)
       (if (style? line-val)
+          ;交互行值满足需求类型：
           (begin
             (send interactive/object
                   set-value (convert line-val))
             (when (is-point? line-val)
                   (set! interactive/old-pt (convert line-val)))
-            (save-interactive-line)
+            (save-interactive-line) ;保存交互行。
             (interactive-n-prompt
              (+ interactive/n 1)))
+          ;交互行值不满足需求类型，重新显示交互提示：
           (begin
             (show-interactive-msg msg)
             (set-n-prompt interactive/n))))
@@ -301,7 +308,8 @@
       (append-interactive-history
        (send interactive/object get-end-prompt))
       ;保存交互对象：
-      (cons interactive/object objects)
+      (set! objects
+            (cons interactive/object objects))
       (reset-interactive-context))
        
     ;创建交互对象：
@@ -355,10 +363,10 @@
     
     ;绘制全部交互对象：
     (define/public (draw-objects dc)
-      (for-each
-       (lambda (object)
-         (send object draw dc))
-       objects))
+      (for/list ([ob objects])
+        (cond
+          [(equal? (send ob get-style) 'spline)
+           (send ob draw dc)])))
 
     ))
     

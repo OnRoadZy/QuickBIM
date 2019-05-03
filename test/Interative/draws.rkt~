@@ -5,6 +5,9 @@
 (provide
  ;图元结构：
  (struct-out point)
+ (struct-out interactive-prompt)
+
+ pels
  
  handler%
  spline%
@@ -12,6 +15,12 @@
 
 ;图元管理：=====================================
 (define pels empty)
+
+;会话提示结构:
+;由两部分组成：需求值类型，提示。
+(struct interactive-prompt
+  (style ;需求值类型。包括:点'point,选项'select,数值'number
+   prompt)) ;提示
 
 ;图元定义：=====================================
 ;定义点结构：
@@ -45,25 +54,98 @@
   (class object%
     (super-new)
 
-    (init-field sp
-                cp
-                ep)
+    (field [values '()]
+           [style "spline"]
+           [create-prompt
+            (vector
+             (interactive-prompt
+              'point
+              "请输入起点：")
+             (interactive-prompt
+              'point
+              "请输入控制点：")
+             (interactive-prompt
+              'point
+              "请输入结束点："))]
+           [end-prompt "绘制Spline线结束。"])
 
+    ;为字段填充值使之具体：
+    (define/public (make-object sp cp ep)
+      (set! values
+            (cons sp
+                  (cons cp
+                        (cons ep values))))
+      this)
+    ;绘制：
     (define/public (draw dc)
-      (send dc draw-spline
-            (point-x sp) (point-y sp)
-            (point-x cp) (point-y cp)
-            (point-x ep) (point-y ep)))
+      (let ([sp (list-ref values 0)]
+            [cp (list-ref values 1)]
+            [ep (list-ref values 2)])
+        (send dc draw-spline
+              (point-x sp) (point-y sp)
+              (point-x cp) (point-y cp)
+              (point-x ep) (point-y ep))))
 
+    ;绘制控制点：
     (define/public (draw-handler dc)
-      (let ([hsp (new handler% [cp sp])]
-            [hcp (new handler% [cp cp])]
-            [hep (new handler% [cp ep])])
+      (let* ([sp (list-ref values 0)]
+             [cp (list-ref values 1)]
+             [ep (list-ref values 2)]
+             [hsp (new handler% [cp sp])]
+             [hcp (new handler% [cp cp])]
+             [hep (new handler% [cp ep])])
         (send hsp draw dc)
         (send hcp draw dc)
         (send hep draw dc)
         (draw-handler-line dc sp cp)
         (draw-handler-line dc cp ep)))
+
+    ;绘制交互即时图：
+    (define/public (immediatly-draw dc old-pt cur-pt)
+      ;根据v向量值的个数绘制图形：
+      (send dc set-pen "red" 1 'xor)
+      (cond
+        [(= (length values) 1)
+         (let ([sp (list-ref values 0)])
+           (send dc draw-line
+                 (point-x sp) (point-y sp)
+                 (point-x old-pt) (point-y old-pt))
+           (send dc draw-line
+                 (point-x sp) (point-y sp)
+                 (point-x cur-pt) (point-y cur-pt)))]
+        [(= (length values) 2)
+         (let ([sp (list-ref values 0)]
+               [cp (list-ref values 1)])
+           (send dc draw-spline
+                 (point-x sp) (point-y sp)
+                 (point-x cp) (point-y cp)
+                 (point-x old-pt) (point-y old-pt))
+           (send dc draw-spline
+                 (point-x sp) (point-y sp)
+                 (point-x cp) (point-y cp)
+                 (point-x cur-pt) (point-y cur-pt)))]))
+    
+    ;提示数量：
+    (define/public (prompt-count)
+      (vector-length create-prompt))
+
+    ;取得提示内容：
+    (define/public (get-prompt n)
+      (interactive-prompt-prompt
+       (vector-ref create-prompt n)))
+
+    ;取得需求值类型：
+    (define/public (get-value-style n)
+      (interactive-prompt-style
+       (vector-ref create-prompt n)))
+
+    ;取得会话结束提示：
+    (define/public (get-end-prompt)
+      end-prompt)
+
+    ;设置绘图值：
+    (define/public (set-value v)
+      (set! values (cons v values)))
     ))
 
 ;B样条线类：
