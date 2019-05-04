@@ -52,9 +52,12 @@
           ;Backspace键:
           [(equal? key #\backspace)
            (backspace-interactive-val)]
-          ;回车:
+          ;回车键:
           [(or (equal? key #\return )
                (equal? key 'numpad-enter ))
+           (enter-interactive)]
+          ;空白键：
+          [(equal? key #\space)
            (enter-interactive)])))
 
     ;处理鼠标事件函数:---------------------------
@@ -72,7 +75,7 @@
 
     ;处理鼠标右键事件:
     (define/public (click-right-button event)
-      void)
+      (enter-interactive))
 
     ;处理鼠标移动事件：
     (define/public (mouse-moving event dc)
@@ -267,12 +270,13 @@
       (equal? interactive/object void))
 
     ;开始一个新的会话：
-    (define (start-new-interactive command)
+    (define/public (start-new-interactive command)
       ;设置会话环境：
       (set! interactive/object
             (create-interactive-object command))
       (set! interactive/n 0)
       ;保存交互行：
+      (set-interactive-line command)
       (save-interactive-line)
       ;启动命令对象的第一段会话：
       (set! line-prompt
@@ -349,7 +353,9 @@
       (set-interactive-line))
 
     ;设置交互行内容：
-    (define (set-interactive-line)
+    (define (set-interactive-line [val ""])
+      (when (non-empty-string? val)
+        (set! line-val val))
       (send interactive-line set-label
             (string-append line-prompt line-val)))
 

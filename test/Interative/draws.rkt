@@ -49,6 +49,28 @@
         (send dc set-pen old-pen)))
   ))
 
+;line直线类：
+(define line%
+  (class object%
+    (super-new)
+
+    (field [vals '()]
+           [style 'line]
+           [create-prompt
+            (vector
+             (interactive-prompt
+              'point
+              "请输入起点:")
+             (interactive-prompt
+              'point
+              "请输入下一点:"))]
+           [end-prompt "绘制Line线结束。"])
+
+    ;绘制:
+    #|(define/public (draw dc)
+      (send dc draw-lines vals))|#
+    ))
+
 ;spline线类：
 (define spline%
   (class object%

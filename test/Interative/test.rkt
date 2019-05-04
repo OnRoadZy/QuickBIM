@@ -45,7 +45,7 @@
        [label "关于(&A)"]
        [callback
         (lambda (item event)
-          (about item event main-frame))]))
+          (about item event))]))
 
 
 ;定义视图框架分割区域：========================
@@ -79,6 +79,9 @@
   (toolbutton pane/toolbar "圆弧" void))
 (define tb/circle-r
   (toolbutton pane/toolbar "半径圆" void))
+(define tb/spline
+  (toolbutton pane/toolbar "Spline线"
+              (send ic start-new-interactive "spline")))
 
 ;视图区：
 (define pane/view
