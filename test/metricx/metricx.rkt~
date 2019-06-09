@@ -1,0 +1,6 @@
+#lang racket
+
+(define metrix (vector
+                (vevtor 1 -2 1 0)
+                (vector 0 5 -2 8)
+                (vector 4 -1 3 -6)))
